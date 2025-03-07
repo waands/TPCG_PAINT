@@ -1,5 +1,5 @@
 import React from "react";
-import Canvas from "./Canvas"
+import Canvas from "../components/Canvas"
 
 interface CanvasGridProps {
   showGrid: boolean;
@@ -37,7 +37,7 @@ const CanvasGrid: React.FC<CanvasGridProps> = ({ showGrid, gridThickness, pixelS
     
   };
 
-  return <Canvas draw={draw} />;
+  return <Canvas mode={""} />;
 };
 
 export default CanvasGrid;
