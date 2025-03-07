@@ -8,6 +8,7 @@ function App() {
   const [showGrid, setShowGrid] = useState(true);
   const [gridThickness, setGridThickness] = useState(1);
   const [pixelSize, setPixelSize] = useState(10);
+  const [canvasSize, setCanvasSize] = useState({ width: 600, height: 700 });
   const [mode, setMode] = useState<string | null>(null);
 
   return (
@@ -21,9 +22,11 @@ function App() {
         setGridThickness={setGridThickness}
         pixelSize={pixelSize}
         setPixelSize={setPixelSize}
+        canvasSize={canvasSize}
+        setCanvasSize={setCanvasSize}
       />
       {/*<CanvasGrid showGrid={showGrid} gridThickness={gridThickness} pixelSize={pixelSize} />*/}
-      <Canvas showGrid={showGrid} gridThickness={gridThickness} pixelSize={pixelSize} mode={mode} />
+      <Canvas showGrid={showGrid} gridThickness={gridThickness} pixelSize={pixelSize} mode={mode}canvasSize={canvasSize} />
       <Functionalities setMode={setMode} />
     </div>
   );

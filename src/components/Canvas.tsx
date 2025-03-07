@@ -5,9 +5,10 @@ interface CanvasProps {
   showGrid: boolean;
   gridThickness: number;
   pixelSize: number;
+  canvasSize: { width: number; height: number; };
 }
 
-const Canvas: React.FC<CanvasProps> = ({ mode, showGrid, gridThickness, pixelSize }) => {
+const Canvas: React.FC<CanvasProps> = ({ mode, showGrid, gridThickness, pixelSize, canvasSize }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
 
@@ -99,7 +100,9 @@ const Canvas: React.FC<CanvasProps> = ({ mode, showGrid, gridThickness, pixelSiz
   };
 
 
-  return <canvas ref={canvasRef} width={500} height={500} onClick={handleCanvasClick} style={{ border: "1px solid black" }} />;
+  // retornar o canvas com o tamanho da tela inteira
+
+  return <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} onClick={handleCanvasClick} style={{ border: "1px solid black" }} />;
 };
 
 export default Canvas;
