@@ -46,6 +46,7 @@ interface ControlsProps {
         alert("O tamanho do canvas não pode ultrapassar o tamanho da tela.");
         return;
       }
+      setNewCanvasSize({ width: Math.floor(newCanvasSize.width / pixelSize) * pixelSize, height: Math.floor(newCanvasSize.height / pixelSize) * pixelSize });
       setCanvasSize(newCanvasSize);
     };
 

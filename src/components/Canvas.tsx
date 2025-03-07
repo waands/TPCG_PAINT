@@ -28,7 +28,7 @@ const Canvas: React.FC<CanvasProps> = ({ mode, showGrid, gridThickness, pixelSiz
     drawGrid(ctx, canvas.width, canvas.height); 
   
     // Desenha o destaque no pixel atual
-    ctx.strokeStyle = "red";
+    ctx.strokeStyle = "grey";
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, pixelSize, pixelSize);
   };
@@ -102,7 +102,7 @@ const Canvas: React.FC<CanvasProps> = ({ mode, showGrid, gridThickness, pixelSiz
 
   // retornar o canvas com o tamanho da tela inteira
 
-  return <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} onClick={handleCanvasClick} style={{ border: "1px solid black" }} />;
+  return <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} onClick={handleCanvasClick} style={{ border: "1px solid black", cursor:"crosshair" }} />;
 };
 
 export default Canvas;
