@@ -1,14 +1,39 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState } from 'react';
+import { drawDDA } from './Line';
 
 interface CanvasProps {
   mode: string | null;
   showGrid: boolean;
   gridThickness: number;
   pixelSize: number;
-  canvasSize: { width: number; height: number; };
+  canvasSize: { width: number; height: number };
+  drawnPixels: { x: number; y: number; type:string }[];
+  setDrawnPixels: React.Dispatch<
+    React.SetStateAction<{ x: number; y: number; type: string }[]>
+  >;
 }
 
-const Canvas: React.FC<CanvasProps> = ({ mode, showGrid, gridThickness, pixelSize, canvasSize }) => {
+export const colorPixel = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  pixelSize: number,
+) => {
+  ctx.fillStyle = 'black';
+  ctx.fillRect(x*pixelSize, y*pixelSize, pixelSize, pixelSize);
+  
+  console.log(`Pintando pixel em (${x}, ${y})`);
+};
+
+const Canvas: React.FC<CanvasProps> = ({
+  mode,
+  showGrid,
+  gridThickness,
+  pixelSize,
+  canvasSize,
+  drawnPixels,
+  setDrawnPixels,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
 
@@ -16,26 +41,37 @@ const Canvas: React.FC<CanvasProps> = ({ mode, showGrid, gridThickness, pixelSiz
   const highlightMousePosition = (event: MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
   
     const rect = canvas.getBoundingClientRect();
-    const x = Math.floor((event.clientX - rect.left) / pixelSize) * pixelSize;
-    const y = Math.floor((event.clientY - rect.top) / pixelSize) * pixelSize;
+    const x = Math.floor((event.clientX - rect.left) / pixelSize);
+    const y = Math.floor((event.clientY - rect.top) / pixelSize);
   
-    // Redesenhar a grade
+    // Redesenha o canvas SEM apagar os pixels desenhados
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid(ctx, canvas.width, canvas.height); 
+    drawGrid(ctx, canvas.width, canvas.height);
+    
+    // Redesenha todos os pixels armazenados
+    drawnPixels.forEach(({ x, y }) => {
+      colorPixel(ctx, x, y, pixelSize);
+    });
   
     // Desenha o destaque no pixel atual
-    ctx.strokeStyle = "grey";
+    ctx.strokeStyle = 'grey';
     ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, pixelSize, pixelSize);
+    ctx.strokeRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
   };
+  
+  
 
-  const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+  const drawGrid = (
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+  ) => {
     if (!showGrid) return;
-    ctx.strokeStyle = "lightgray";
+    ctx.strokeStyle = 'lightgray';
     ctx.lineWidth = gridThickness;
     for (let x = 0; x <= width; x += pixelSize) {
       ctx.beginPath();
@@ -54,32 +90,26 @@ const Canvas: React.FC<CanvasProps> = ({ mode, showGrid, gridThickness, pixelSiz
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    drawGrid(ctx, canvas.width, canvas.height);
-    canvas.addEventListener("mousemove", highlightMousePosition);
+  
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpar o canvas
+    drawGrid(ctx, canvas.width, canvas.height); // Redesenhar a grade
+  
+    // Redesenhar todos os pixels armazenados
+    drawnPixels.forEach(({ x, y }) => {
+      colorPixel(ctx, x, y, pixelSize);
+    });
+  
+    // Adicionar o evento de mousemove para destacar o pixel do mouse
+    canvas.addEventListener('mousemove', highlightMousePosition);
+  
     return () => {
-      canvas.removeEventListener("mousemove", highlightMousePosition);
+      canvas.removeEventListener('mousemove', highlightMousePosition);
     };
+  }, [drawnPixels, showGrid, gridThickness, pixelSize]); 
 
-    // Desenhar formas
-    /*
-    if (mode === "line" && clicks.length === 2) {
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(clicks[0].x, clicks[0].y);
-      ctx.lineTo(clicks[1].x, clicks[1].y);
-      ctx.stroke();
-      setClicks([]);
-    }
-    */
-    
-
-  }, [highlightMousePosition, clicks, mode, showGrid, gridThickness, pixelSize]);
+  
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -90,19 +120,39 @@ const Canvas: React.FC<CanvasProps> = ({ mode, showGrid, gridThickness, pixelSiz
     setClicks((prev) => {
       const newClicks = [...prev, { x, y }];
       if (newClicks.length === 2) {
-        console.log("Ponto 1:", newClicks[0]);
-        console.log("Ponto 2:", newClicks[1]);
+        console.log('Ponto 1:', newClicks[0]);
+        console.log('Ponto 2:', newClicks[1]);
         // Adicionar a lógica para desenhar a linha entre os pontos
+        // Desenhar formas
+        if (mode === 'line' && newClicks.length === 2) {
+          drawDDA(
+            canvasRef.current?.getContext('2d') as CanvasRenderingContext2D,
+            newClicks[0].x,
+            newClicks[0].y,
+            newClicks[1].x,
+            newClicks[1].y,
+            pixelSize,
+            setDrawnPixels,
+          );
+        }
+
         return [];
       }
       return newClicks;
     });
   };
 
-
   // retornar o canvas com o tamanho da tela inteira
 
-  return <canvas ref={canvasRef} width={canvasSize.width} height={canvasSize.height} onClick={handleCanvasClick} style={{ border: "1px solid black", cursor:"crosshair" }} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      width={canvasSize.width}
+      height={canvasSize.height}
+      onClick={handleCanvasClick}
+      style={{ border: '1px solid black', cursor: 'crosshair' }}
+    />
+  );
 };
 
 export default Canvas;
