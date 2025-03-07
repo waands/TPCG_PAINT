@@ -8,7 +8,7 @@ function App() {
   const [showGrid, setShowGrid] = useState(true);
   const [gridThickness, setGridThickness] = useState(1);
   const [pixelSize, setPixelSize] = useState(10);
-  const [canvasSize, setCanvasSize] = useState({ width: 600, height: 700 });
+  const [canvasSize, setCanvasSize] = useState({ width: Math.floor((window.innerWidth - 200)/pixelSize)*pixelSize, height: Math.floor((window.innerHeight - 300)/pixelSize)* pixelSize });
   const [mode, setMode] = useState<string | null>(null);
 
   return (
