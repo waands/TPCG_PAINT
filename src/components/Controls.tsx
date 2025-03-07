@@ -56,7 +56,9 @@ const Controls: React.FC<ControlsProps> = ({
       width: Math.floor(newCanvasSize.width / pixelSize) * pixelSize,
       height: Math.floor(newCanvasSize.height / pixelSize) * pixelSize,
     });
-    setCanvasSize(newCanvasSize);
+    console.log(newCanvasSize);
+    setCanvasSize({width: Math.floor(newCanvasSize.width / pixelSize) * pixelSize, height: Math.floor(newCanvasSize.height / pixelSize) * pixelSize});
+    console.log(canvasSize);
   };
 
   return (

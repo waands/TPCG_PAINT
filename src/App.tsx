@@ -14,8 +14,8 @@ function App() {
   });
   const [mode, setMode] = useState<string | null>(null);
   const [drawnPixels, setDrawnPixels] = useState<
-      { x: number; y: number; type: string }[]
-    >([]);
+    { x: number; y: number; type: string }[]
+  >([]);
 
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -38,10 +38,10 @@ function App() {
         pixelSize={pixelSize}
         mode={mode}
         canvasSize={canvasSize}
-        drawnPixels={drawnPixels} 
+        drawnPixels={drawnPixels}
         setDrawnPixels={setDrawnPixels}
       />
-      <Functionalities setMode={setMode} />
+      <Functionalities setMode={setMode} setDrawnPixels={setDrawnPixels} />
     </div>
   );
 }

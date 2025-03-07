@@ -36,6 +36,7 @@ const Canvas: React.FC<CanvasProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
+  const lastHighlightedRef = useRef<{ x: number; y: number } | null>(null);
 
   // Função para destacar a posição do mouse
   const highlightMousePosition = (event: MouseEvent) => {
@@ -48,21 +49,36 @@ const Canvas: React.FC<CanvasProps> = ({
     const x = Math.floor((event.clientX - rect.left) / pixelSize);
     const y = Math.floor((event.clientY - rect.top) / pixelSize);
   
-    // Redesenha o canvas SEM apagar os pixels desenhados
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid(ctx, canvas.width, canvas.height);
-    
-    // Redesenha todos os pixels armazenados
-    drawnPixels.forEach(({ x, y }) => {
-      colorPixel(ctx, x, y, pixelSize);
-    });
+    // Clear previous highlight if exists
+    if (lastHighlightedRef.current) {
+      const { x: lastX, y: lastY } = lastHighlightedRef.current;
   
-    // Desenha o destaque no pixel atual
+      // Fill with white background first
+      ctx.fillStyle = 'white';
+      ctx.fillRect(lastX * pixelSize, lastY * pixelSize, pixelSize, pixelSize);
+  
+      // Redraw grid for this cell if needed
+      if (showGrid) {
+        ctx.strokeStyle = 'lightgray';
+        ctx.lineWidth = gridThickness;
+        ctx.strokeRect(lastX * pixelSize, lastY * pixelSize, pixelSize, pixelSize);
+      }
+  
+      // Redraw pixel if it was drawn before
+      const wasDrawn = drawnPixels.find(p => p.x === lastX && p.y === lastY);
+      if (wasDrawn) {
+        colorPixel(ctx, lastX, lastY, pixelSize);
+      }
+    }
+  
+    // Draw new highlight
     ctx.strokeStyle = 'grey';
     ctx.lineWidth = 2;
     ctx.strokeRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
-  };
   
+    // Update last highlighted position
+    lastHighlightedRef.current = { x, y };
+  };
   
 
   const drawGrid = (
@@ -93,21 +109,25 @@ const Canvas: React.FC<CanvasProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
   
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpar o canvas
-    drawGrid(ctx, canvas.width, canvas.height); // Redesenhar a grade
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpar o canvas
+      drawGrid(ctx, canvas.width, canvas.height); // Redesenhar a grade
   
-    // Redesenhar todos os pixels armazenados
-    drawnPixels.forEach(({ x, y }) => {
-      colorPixel(ctx, x, y, pixelSize);
-    });
+      // Redesenhar todos os pixels armazenados
+      drawnPixels.forEach(({ x, y }) => {
+        colorPixel(ctx, x, y, pixelSize);
+      });
+    };
+  
+    requestAnimationFrame(draw);
   
     // Adicionar o evento de mousemove para destacar o pixel do mouse
-    canvas.addEventListener('mousemove', highlightMousePosition);
+    //canvas.addEventListener('mousemove', highlightMousePosition);
   
     return () => {
-      canvas.removeEventListener('mousemove', highlightMousePosition);
+      //canvas.removeEventListener('mousemove', highlightMousePosition);
     };
-  }, [drawnPixels, showGrid, gridThickness, pixelSize]); 
+  }, [canvasSize, drawnPixels, showGrid, gridThickness, pixelSize]);
 
   
 
