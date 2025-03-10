@@ -1,4 +1,4 @@
-import { colorPixel } from './Canvas';
+import { colorPixel } from '../components/Canvas';
 
 export const drawDDA = (
   ctx: CanvasRenderingContext2D,
@@ -7,8 +7,8 @@ export const drawDDA = (
   x2: number,
   y2: number,
   pixelSize: number,
-  setDrawnPixels: React.Dispatch<
-    React.SetStateAction<{ x: number; y: number; type: string }[]>
+  setDrawnShapes: React.Dispatch<
+    React.SetStateAction<{ type: string; pixels: { x: number; y: number }[] }[]>
   >,
 ) => {
   let dx = x2 - x1;
@@ -36,8 +36,8 @@ export const drawDDA = (
     let roundedX = Math.round(x);
     let roundedY = Math.round(y);
     colorPixel(ctx, roundedX, roundedY, pixelSize);
-    newPixels.push({ x: roundedX, y: roundedY, type: 'line' });
+    newPixels.push({ x: roundedX, y: roundedY });
   }
   // Atualizar o estado dos pixels desenhados
-  setDrawnPixels((prev) => [...prev, ...newPixels]);
+  setDrawnShapes((prev) => [...prev, { type: 'line', pixels: newPixels }]);
 };

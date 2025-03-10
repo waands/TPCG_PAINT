@@ -2,17 +2,19 @@ import React from 'react';
 
 interface FunctionalitiesProps {
   setMode: (mode: string | null) => void;
-  setDrawnPixels: React.Dispatch<
-    React.SetStateAction<{ x: number; y: number; type: string }[]>
+  setDrawnShapes: React.Dispatch<
+    React.SetStateAction<{ type: string; pixels: { x: number; y: number }[] }[]>
   >;
 }
 
 const Functionalities: React.FC<FunctionalitiesProps> = ({
   setMode,
-  setDrawnPixels,
+  setDrawnShapes,
 }) => {
   return (
     <div>
+      <button className="btn btn-soft btn-accent" onClick={() => setMode('transform')}>Transformar</button>
+
       <div className="dropdown dropdown-center">
         <button
           tabIndex={0}
@@ -26,14 +28,13 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
           tabIndex={0}
           className="dropdown-content menu bg-primary-content rounded-box z-1 w-52 p-2 shadow-sm"
         >
-          <li>
+          <li onClick={() => setMode('line')}>
             <a className="text-pimary">
               <input
                 type="radio"
                 name="radio-4"
                 className="radio radio-primary checked:bg-primary-content"
                 defaultChecked
-                onClick={() => setMode('line')}
               />
               {'DDA'}
             </a>
@@ -61,7 +62,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
         onClick={() => {
           if (window.confirm('Tem certeza que deseja limpar o canvas?')) {
             setMode(null);
-            setDrawnPixels([]);
+            setDrawnShapes([]);
           }
         }}
       >

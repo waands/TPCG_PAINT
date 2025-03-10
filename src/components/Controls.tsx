@@ -228,7 +228,7 @@ const Controls: React.FC<ControlsProps> = ({
                 onClick={() => {
                   setNewCanvasSize((prev) => ({
                     ...prev,
-                    width: window.innerWidth,
+                    width: window.innerWidth - 50,
                   }));
                 }}
               >
@@ -257,7 +257,7 @@ const Controls: React.FC<ControlsProps> = ({
                 onClick={() => {
                   setNewCanvasSize((prev) => ({
                     ...prev,
-                    height: window.innerHeight,
+                    height: window.innerHeight - 120,
                   }));
                 }}
               >

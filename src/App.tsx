@@ -13,8 +13,8 @@ function App() {
     height: Math.floor((window.innerHeight - 300) / pixelSize) * pixelSize,
   });
   const [mode, setMode] = useState<string | null>(null);
-  const [drawnPixels, setDrawnPixels] = useState<
-    { x: number; y: number; type: string }[]
+  const [drawnShapes, setDrawnShapes] = useState<
+    { type: string; pixels: { x: number; y: number }[] }[]
   >([]);
 
   return (
@@ -38,10 +38,10 @@ function App() {
         pixelSize={pixelSize}
         mode={mode}
         canvasSize={canvasSize}
-        drawnPixels={drawnPixels}
-        setDrawnPixels={setDrawnPixels}
+        drawnShapes={drawnShapes}
+        setDrawnShapes={setDrawnShapes}
       />
-      <Functionalities setMode={setMode} setDrawnPixels={setDrawnPixels} />
+      <Functionalities setMode={setMode} setDrawnShapes={setDrawnShapes} />
     </div>
   );
 }
