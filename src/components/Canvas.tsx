@@ -1,6 +1,7 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { drawDDA } from '../utils/Line';
+import React, { useRef, useEffect, useState, Dispatch, SetStateAction } from 'react';
+import { drawDDA } from '../utils/LineAlg';
 import { translacao } from '../utils/TransformGeo2D';
+import { Shape, Line } from '../utils/Shapes';
 
 interface CanvasProps {
   mode: string | null;
@@ -8,10 +9,9 @@ interface CanvasProps {
   gridThickness: number;
   pixelSize: number;
   canvasSize: { width: number; height: number };
-  drawnShapes: { type: string; pixels: { x: number; y: number }[] }[];
-  setDrawnShapes: React.Dispatch<
-    React.SetStateAction<{ type: string; pixels: { x: number; y: number }[] }[]>
-  >;
+  drawnShapes: Shape[];
+  setDrawnShapes: Dispatch<SetStateAction<Shape[]>>;
+  selectedAlgorithm: "DDA" | "Bresenham";
 }
 
 export const colorPixel = (
@@ -34,13 +34,15 @@ const Canvas: React.FC<CanvasProps> = ({
   canvasSize,
   drawnShapes,
   setDrawnShapes,
+  selectedAlgorithm,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
   const lastHighlightedRef = useRef<{ x: number; y: number } | null>(null);
-  const [selectedShape, setSelectedShape] = useState<{ type: string; pixels: { x: number; y: number }[] } | null>(null);
+  const [selectedShape, setSelectedShape] = useState<Shape | null>(null);
 
   // Função para destacar a posição do mouse
+/*
   const highlightMousePosition = (event: MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -90,7 +92,7 @@ const Canvas: React.FC<CanvasProps> = ({
     // Update last highlighted position
     lastHighlightedRef.current = { x, y };
   };
-
+*/
   const drawGrid = (
     ctx: CanvasRenderingContext2D,
     width: number,
@@ -118,28 +120,14 @@ const Canvas: React.FC<CanvasProps> = ({
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpar o canvas
-      drawGrid(ctx, canvas.width, canvas.height); // Redesenhar a grade
-
-      // Redesenhar todos os pixels armazenados
-      drawnShapes.forEach(({ pixels }) => {
-        pixels.forEach(({ x, y }) => {
-          colorPixel(ctx, x, y, pixelSize);
-        });
-      });
-      
-    };
-
-    requestAnimationFrame(draw);
+  
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawGrid(ctx, canvas.width, canvas.height);
+  
+    drawnShapes.forEach((shape) => shape.draw(ctx, pixelSize));
 
     // Adicionar o evento de mousemove para destacar o pixel do mouse
     //canvas.addEventListener('mousemove', highlightMousePosition);
-
-    return () => {
-      //canvas.removeEventListener('mousemove', highlightMousePosition);
-    };
   }, [canvasSize, drawnShapes, showGrid, gridThickness, pixelSize]);
 
 
@@ -147,18 +135,63 @@ const Canvas: React.FC<CanvasProps> = ({
     if (!selectedShape) return;
   
     setDrawnShapes((prevShapes) =>
-      prevShapes.map((shape) =>
-        shape === selectedShape ? translacao(shape, tx, ty) : shape
-      )
+      prevShapes.map((shape) => {
+        if (shape === selectedShape) {
+          shape.translate(tx, ty);
+        }
+        return shape;
+      })
     );
   };
   
+  
+  
 
-const getClickedShape = (x: number, y: number) => {
-  return drawnShapes.find((shape) =>
-    shape.pixels.some((p) => Math.abs(p.x - x) < pixelSize && Math.abs(p.y - y) < pixelSize)
-  );
-};
+  const getClickedShape = (x: number, y: number): Shape | undefined => {
+    console.log("🔍 Buscando forma no ponto:", x, y);
+  
+    return drawnShapes.find((shape) => {
+      console.log("Shape:", shape);
+      console.log("É instância de Line?", shape instanceof Line);
+  
+      if (shape instanceof Line) {
+        console.log("🎯 Verificando linha:", shape);
+  
+        // Extrai os pontos da linha
+        const { start, end } = shape;
+  
+        // Calcula a distância do ponto (x, y) até a linha
+        const distanceToLine = (px: number, py: number, x1: number, y1: number, x2: number, y2: number) => {
+          const A = x2 - x1;
+          const B = y2 - y1;
+          const C = x1 - px;
+          const D = y1 - py;
+  
+          const numerator = Math.abs(A * D - C * B);
+          const denominator = Math.sqrt(A * A + B * B);
+          if (denominator === 0) return Infinity; // Linha degenerada em um ponto
+  
+          const distance = numerator / denominator;
+  
+          // Verifica se o ponto projetado está dentro dos limites da linha
+          const dot = (px - x1) * (x2 - x1) + (py - y1) * (y2 - y1);
+          const lenSq = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+          if (dot < 0 || dot > lenSq) return Infinity; // Fora dos limites da linha
+  
+          return distance;
+        };
+  
+        const dist = distanceToLine(x, y, start.x, start.y, end.x, end.y);
+        console.log("📏 Distância até a linha:", dist);
+  
+        return dist < pixelSize ? shape : undefined; // Retorna a linha se estiver próxima
+      }
+      
+      return undefined;
+    });
+  };
+  
+  
 
 const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
   const rect = canvasRef.current?.getBoundingClientRect();
@@ -166,39 +199,36 @@ const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
   const x = Math.floor((event.clientX - rect.left) / pixelSize);
   const y = Math.floor((event.clientY - rect.top) / pixelSize);
 
-  // Verifica se o usuário clicou em uma forma já desenhada
-  const clickedShape = getClickedShape(x, y);
-
-  if (clickedShape) {
-    setSelectedShape(clickedShape);
-    console.log("Forma selecionada:", clickedShape);
-    applyTranslation(10, 10);
-    return; // Evita que o clique crie uma nova forma
-  }
-
-  // Se não clicou em nenhuma forma, verifica se é para desenhar uma nova
+  if (mode != "transform"){
   setClicks((prev) => {
     const newClicks = [...prev, { x, y }];
     if (newClicks.length === 2) {
-      console.log('Ponto 1:', newClicks[0]);
-      console.log('Ponto 2:', newClicks[1]);
+      console.log("Ponto 1:", newClicks[0], "Ponto 2:", newClicks[1]);
 
-      if (mode === 'line') {
-        drawDDA(
-          canvasRef.current?.getContext('2d') as CanvasRenderingContext2D,
-          newClicks[0].x,
-          newClicks[0].y,
-          newClicks[1].x,
-          newClicks[1].y,
-          pixelSize,
-          setDrawnShapes
+      if (mode === "line") {
+        const newLine = new Line(newClicks[0], newClicks[1], selectedAlgorithm);
+        setDrawnShapes((prevShapes) =>
+          prevShapes.map((shape) =>
+            Object.assign(Object.create(Object.getPrototypeOf(shape)), shape)
+          ).concat(newLine)      
         );
+        console.log("Linhas desenhadas: ", drawnShapes);
       }
 
-      return []; // Reseta os cliques após desenhar a linha
+      return [];
     }
     return newClicks;
   });
+  } else if (mode === "transform") {
+    // Verificar se clicou em alguma forma
+    const clickedShape = getClickedShape(x, y);
+    //console.log("Clique na linhaaa: ", clickedShape);
+    if (clickedShape) {
+      console.log("Clique na linha: ", clickedShape);
+      setSelectedShape(clickedShape);
+      applyTranslation(1, 1);
+    }
+  } 
 };
 
 

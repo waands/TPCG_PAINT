@@ -3,6 +3,7 @@ import CanvasGrid from './zzold/CanvasGrid';
 import Controls from './components/Controls';
 import Functionalities from './components/Functionalities';
 import Canvas from './components/Canvas';
+import { Shape } from './utils/Shapes';
 
 function App() {
   const [showGrid, setShowGrid] = useState(true);
@@ -13,9 +14,9 @@ function App() {
     height: Math.floor((window.innerHeight - 300) / pixelSize) * pixelSize,
   });
   const [mode, setMode] = useState<string | null>(null);
-  const [drawnShapes, setDrawnShapes] = useState<
-    { type: string; pixels: { x: number; y: number }[] }[]
-  >([]);
+  const [drawnShapes, setDrawnShapes] = useState<Shape[]>([]);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<"DDA" | "Bresenham">("DDA");
+
 
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -40,8 +41,9 @@ function App() {
         canvasSize={canvasSize}
         drawnShapes={drawnShapes}
         setDrawnShapes={setDrawnShapes}
+        selectedAlgorithm={selectedAlgorithm}
       />
-      <Functionalities setMode={setMode} setDrawnShapes={setDrawnShapes} />
+      <Functionalities mode={mode} setMode={setMode} setDrawnShapes={setDrawnShapes} />
     </div>
   );
 }

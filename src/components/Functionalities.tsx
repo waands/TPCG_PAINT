@@ -1,25 +1,27 @@
 import React from 'react';
+import { Dispatch, SetStateAction } from 'react';
+import { Shape } from '../utils/Shapes';
 
 interface FunctionalitiesProps {
   setMode: (mode: string | null) => void;
-  setDrawnShapes: React.Dispatch<
-    React.SetStateAction<{ type: string; pixels: { x: number; y: number }[] }[]>
-  >;
+  setDrawnShapes: Dispatch<SetStateAction<Shape[]>>;
+  mode: string | null;
 }
 
 const Functionalities: React.FC<FunctionalitiesProps> = ({
   setMode,
   setDrawnShapes,
+  mode,
 }) => {
   return (
     <div>
-      <button className="btn btn-soft btn-accent" onClick={() => setMode('transform')}>Transformar</button>
+      <button className={`btn ${mode === 'transform' ? 'btn-soft btn-accent' : 'btn-gray hover:btn-accent'}`} onClick={() => setMode('transform')}>Transformar</button>
 
       <div className="dropdown dropdown-center">
         <button
           tabIndex={0}
           role="button"
-          className="btn btn-soft btn-primary m-1"
+          className={`btn m-1 ${mode === 'line' ? 'btn-soft btn-primary': 'btn-gray hover:btn-primary'} `}
           onClick={() => setMode('line')}
         >
           Reta
@@ -52,7 +54,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
         </ul>
       </div>
       <button
-        className="btn btn-soft btn-secondary"
+        className={`btn ${mode === 'circle' ? 'btn-soft btn-secondary' : 'btn-gray hover:btn-secondary'} `}
         onClick={() => setMode('circle')}
       >
         Círculo
