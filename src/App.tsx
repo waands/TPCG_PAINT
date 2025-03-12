@@ -15,10 +15,11 @@ function App() {
   });
   const [mode, setMode] = useState<string | null>(null);
   const [drawnShapes, setDrawnShapes] = useState<Shape[]>([]);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState<"DDA" | "Bresenham">("DDA");
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<
+    'DDA' | 'Bresenham'
+  >('DDA');
   const [selectedColor, setSelectedColor] = useState<string>('#000');
   const [selectedShape, setSelectedShape] = useState<Shape | null>(null);
-
 
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -48,7 +49,17 @@ function App() {
         setSelectedShape={setSelectedShape}
         selectedShape={selectedShape}
       />
-      <Functionalities mode={mode} setMode={setMode} setDrawnShapes={setDrawnShapes} setSelectedColor={setSelectedColor} selectedColor={selectedColor} setSeletedAlgorithm={setSelectedAlgorithm} selectedAlgorithm={selectedAlgorithm} selectedShape={selectedShape}/>
+      <Functionalities
+        mode={mode}
+        setMode={setMode}
+        setDrawnShapes={setDrawnShapes}
+        drawnShapes={drawnShapes}
+        setSelectedColor={setSelectedColor}
+        selectedColor={selectedColor}
+        setSeletedAlgorithm={setSelectedAlgorithm}
+        selectedAlgorithm={selectedAlgorithm}
+        selectedShape={selectedShape}
+      />
     </div>
   );
 }

@@ -18,6 +18,7 @@ abstract class Shape {
     sx: number,
     sy: number,
     theta: number,
+    eixo: number,
   ): void;
 
   select() {
@@ -55,10 +56,10 @@ class Line extends Shape {
     if (this.algorithm === 'DDA') {
       drawDDA(
         ctx,
-        this.start.x,
-        this.start.y,
-        this.end.x,
-        this.end.y,
+        Math.round(this.start.x),
+        Math.round(this.start.y),
+        Math.round(this.end.x),
+        Math.round(this.end.y),
         pixelSize,
         this.color,
       );
@@ -77,8 +78,8 @@ class Line extends Shape {
       ctx.fillStyle = '#17B29E';
       ctx.beginPath();
       ctx.fillRect(
-        this.start.x * pixelSize,
-        this.start.y * pixelSize,
+        Math.round(this.start.x) * pixelSize,
+        Math.round(this.start.y) * pixelSize,
         pixelSize,
         pixelSize,
       );
@@ -86,8 +87,8 @@ class Line extends Shape {
 
       ctx.beginPath();
       ctx.fillRect(
-        this.end.x * pixelSize,
-        this.end.y * pixelSize,
+        Math.round(this.end.x) * pixelSize,
+        Math.round(this.end.y) * pixelSize,
         pixelSize,
         pixelSize,
       );
@@ -95,8 +96,16 @@ class Line extends Shape {
     }
   }
 
-  translate(tx: number, ty: number, sx: number, sy: number, theta: number) {
-    compositeTransform(this, tx, ty, sx, sy, theta);
+  translate(
+    tx: number,
+    ty: number,
+    sx: number,
+    sy: number,
+    theta: number,
+    eixo: number,
+  ) {
+    compositeTransform(this, tx, ty, sx, sy, theta, eixo);
+    console.log(this);
   }
 }
 

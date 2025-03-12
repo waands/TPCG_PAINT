@@ -2,7 +2,7 @@ import { Shape, Line, Circle } from './Shapes';
 
 export const translacao = (shape: Shape, tx: number, ty: number) => {
   if (shape instanceof Line) {
-    console.log(tx, ty);
+    //console.log(tx, ty);
     shape.start.x += tx;
     shape.start.y += ty;
     shape.end.x += tx;
@@ -49,27 +49,32 @@ export const createRotationMatrix = (theta: number) => [
   [0, 0, 1],
 ];
 
-export const applyTransformation = (
-  shape: Shape,
-  transformationMatrix: number[][],
-) => {
-  if (shape instanceof Line) {
-    const applyMatrix = (x: number, y: number) => {
-      const result = [
-        transformationMatrix[0][0] * x +
-          transformationMatrix[0][1] * y +
-          transformationMatrix[0][2],
-        transformationMatrix[1][0] * x +
-          transformationMatrix[1][1] * y +
-          transformationMatrix[1][2],
-      ];
-      return { x: result[0], y: result[1] };
-    };
-
-    shape.start = applyMatrix(shape.start.x, shape.start.y);
-    shape.end = applyMatrix(shape.end.x, shape.end.y);
-  } else if (shape instanceof Circle) {
-    //shape.center = applyMatrix(shape.center.x, shape.center.y);
+export const createReflectionMatrix = (eixo: number) => {
+  //eixo x = 1, eixo y = 2, eixo xy = 3
+  if (eixo == 1) {
+    return [
+      [1, 0, 0],
+      [0, -1, 0],
+      [0, 0, 1],
+    ];
+  } else if (eixo == 2) {
+    return [
+      [-1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1],
+    ];
+  } else if (eixo == 3) {
+    return [
+      [-1, 0, 0],
+      [0, -1, 0],
+      [0, 0, 1],
+    ];
+  } else {
+    return [
+      [1, 0, 0],
+      [0, 1, 0],
+      [0, 0, 1],
+    ];
   }
 };
 
@@ -80,12 +85,61 @@ export const compositeTransform = (
   sx: number,
   sy: number,
   theta: number,
+  eixo: number,
 ) => {
-  let T = createTranslationMatrix(tx, ty);
-  let S = createScaleMatrix(sx, sy);
-  let R = createRotationMatrix(theta);
+  let refX = 0,
+    refY = 0;
 
-  let M = multiplyMatrices(T, multiplyMatrices(R, S)); // Composição das transformações
+  if (shape instanceof Line) {
+    refX = (shape.start.x + shape.end.x) / 2;
+    refY = (shape.start.y + shape.end.y) / 2;
+  } else if (shape instanceof Circle) {
+    refX = shape.center.x;
+    refY = shape.center.y;
+  }
 
-  applyTransformation(shape, M);
+  //console.log('aaaaaaaaaaaaa ERIXOOOOOO', eixo);
+
+  // Matrizes de transformação
+
+  const T1 = createTranslationMatrix(-refX, -refY); // Move para a origem
+  const L = createReflectionMatrix(eixo); // Reflete
+  const R = createRotationMatrix(theta); // Rotaciona
+  const S = createScaleMatrix(sx, sy); // Aplica escala
+  const T2 = createTranslationMatrix(refX, refY); // Volta para posição original
+
+  const T = createTranslationMatrix(tx, ty); // Translação final
+
+  // Composição das matrizes: T * (T2 * (R * (S * L * T1)))
+  let transformMatrix = multiplyMatrices(
+    T,
+    multiplyMatrices(
+      T2,
+      multiplyMatrices(R, multiplyMatrices(S, multiplyMatrices(L, T1))),
+    ),
+  );
+
+  // Aplicar a matriz ao shape
+  return applyTransformation(shape, transformMatrix);
+};
+
+const applyTransformation = (shape: Shape, matrix: number[][]) => {
+  if (shape instanceof Line) {
+    shape.start = applyMatrixToPoint(shape.start, matrix);
+    shape.end = applyMatrixToPoint(shape.end, matrix);
+  } else if (shape instanceof Circle) {
+    shape.center = applyMatrixToPoint(shape.center, matrix);
+  }
+  return shape;
+};
+
+const applyMatrixToPoint = (
+  point: { x: number; y: number },
+  matrix: number[][],
+) => {
+  const [x, y] = [point.x, point.y];
+  return {
+    x: matrix[0][0] * x + matrix[0][1] * y + matrix[0][2],
+    y: matrix[1][0] * x + matrix[1][1] * y + matrix[1][2],
+  };
 };

@@ -2,11 +2,12 @@ import React from 'react';
 import { Dispatch, SetStateAction } from 'react';
 import { Shape } from '../utils/Shapes';
 import ColorPicker from './ColorPicker';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 interface FunctionalitiesProps {
   setMode: (mode: string | null) => void;
   setDrawnShapes: Dispatch<SetStateAction<Shape[]>>;
+  drawnShapes: Shape[];
   mode: string | null;
   setSeletedAlgorithm: (algorithm: 'DDA' | 'Bresenham') => void;
   selectedAlgorithm: 'DDA' | 'Bresenham';
@@ -18,6 +19,7 @@ interface FunctionalitiesProps {
 const Functionalities: React.FC<FunctionalitiesProps> = ({
   setMode,
   setDrawnShapes,
+  drawnShapes,
   mode,
   setSeletedAlgorithm,
   selectedAlgorithm,
@@ -35,33 +37,50 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
   };
 
   const handleTransform = (dx: number, dy: number) => {
-    console.log(transformValue);
-
     if (selectedShape) {
-      setDrawnShapes((prevShapes) =>
-        prevShapes.map((shape) => {
-          if (shape === selectedShape) {
-            if (transformType === 'translate') {
-              selectedShape.translate(
-                (dx * transformValue) / 2,
-                (dy * transformValue) / 2,
-                1,
-                1,
-                0,
-              ); // Apenas translação
-            } else if (transformType === 'scale') {
-              selectedShape.translate(0, 0, transformValue, transformValue, 0); // Apenas escala
-              console.log("transform value", transformValue)
-            } else {
-              selectedShape.translate(0, 0, 1, 1, transformValue); // Apenas rotação
-            }
-
-            console.log('Transformação aplicada:', selectedShape);
-            return selectedShape;
-          }
-          return shape;
-        }),
-      );
+      //console.log(drawnShapes)
+      // Criar uma cópia de todas as formas existentes, mas manter a mesma referência do selectedShape
+      const newShapes = drawnShapes.map(shape => shape);
+      
+      // Aplicar a transformação na forma selecionada
+      switch (transformType) {
+        case 'translate':
+          selectedShape.translate(
+            (dx * transformValue),
+            (dy * transformValue),
+            1,
+            1,
+            0,
+            0,
+          );
+          break;
+        case 'scale':
+          selectedShape.translate(
+            0,
+            0,
+            transformValue,
+            transformValue,
+            0,
+            0,
+          );
+          break;
+        case 'rotate':
+          selectedShape.translate(0, 0, 1, 1, transformValue, 0);
+          break;
+        case 'reflection':
+          selectedShape.translate(0, 0, 1, 1, 0, transformValue);
+          break;
+      }
+      
+      /*console.log(
+        'Transformação ',
+        transformType,
+        ' aplicada:',
+        selectedShape,
+      );*/
+      
+      // Atualizar o estado com o novo array de formas
+      setDrawnShapes(newShapes);
     }
   };
 
@@ -134,7 +153,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
               onClick={() => {
                 setTransformType('rotate');
                 setTransformDropdownOpen(!transformDropdownOpen);
-                setTransformValue(1);
+                setTransformValue(30);
               }}
             >
               Rotacionar
@@ -145,10 +164,21 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
               onClick={() => {
                 setTransformType('scale');
                 setTransformDropdownOpen(!transformDropdownOpen);
-                setTransformValue(1);
+                setTransformValue(2);
               }}
             >
               Escalar
+            </button>
+            <button
+              style={{ marginTop: '4px' }}
+              className="btn btn-soft btn-accent btn-sm"
+              onClick={() => {
+                setTransformType('reflection');
+                setTransformDropdownOpen(!transformDropdownOpen);
+                setTransformValue(0);
+              }}
+            >
+              Refletir
             </button>
           </div>
         )}
@@ -252,10 +282,10 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             className="flex w-full justify-center"
           >
             <input
-            style={{marginTop: '10px'}}
+              style={{ marginTop: '10px' }}
               type="range"
-              min={1}
-              max="100"
+              min="1"
+              max="50"
               value={transformValue}
               className="range range-accent"
               onChange={(e) => setTransformValue(Number(e.target.value))}
@@ -268,11 +298,108 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
               value={transformValue}
               onChange={(e) => setTransformValue(parseInt(e.target.value) || 0)}
               min="1"
-              max="100"
+              max="50"
               title=""
             />
           </div>
-          <button className='btn btn-soft btn-accent' onClick={() => handleTransform(0, 0)}>OK</button>
+          <button
+            className="btn btn-soft btn-accent"
+            onClick={() => handleTransform(0, 0)}
+          >
+            OK
+          </button>
+        </div>
+      )}
+      {mode === 'transform' && transformType === 'rotate' && (
+        <div
+          style={{
+            position: 'absolute',
+            zIndex: 1,
+            marginTop: '150px',
+            marginLeft: '-200px',
+          }}
+        >
+          <div
+            style={{ gap: '4px', marginTop: '4px' }}
+            className="flex w-full justify-center"
+          >
+            <input
+              style={{ marginTop: '10px' }}
+              type="range"
+              min={-180}
+              max="180"
+              value={transformValue}
+              className="range range-accent"
+              onChange={(e) => setTransformValue(Number(e.target.value))}
+            />
+            <input
+              style={{ width: '20px', height: '40px' }}
+              type=""
+              className="input validator"
+              required
+              value={transformValue}
+              onChange={(e) => setTransformValue(parseInt(e.target.value) || 0)}
+              min={-180}
+              max="180"
+              title=""
+            />
+          </div>
+          <button
+            className="btn btn-soft btn-accent"
+            onClick={() => handleTransform(0, 0)}
+          >
+            OK
+          </button>
+        </div>
+      )}
+      {mode === 'transform' && transformType === 'reflection' && (
+        <div
+          style={{
+            position: 'absolute',
+            zIndex: 1,
+            marginTop: '150px',
+            marginLeft: '-200px',
+          }}
+        >
+          <div style={{ gap: '4px' }} className="flex w-full justify-center">
+            <button
+              className={`btn ${
+                transformValue === 1 ? 'btn-accent' : 'btn-soft btn-accent'
+              } btn-accent `}
+              onClick={() => {
+                setTransformValue(1);
+              }}
+            >
+              X
+            </button>
+            <button
+              className={`btn ${
+                transformValue === 2 ? 'btn-accent' : 'btn-soft btn-accent'
+              } `}
+              onClick={() => {
+                setTransformValue(2);
+              }}
+            >
+              Y
+            </button>
+            <button
+              className={`btn ${
+                transformValue === 3 ? 'btn-accent' : 'btn-soft btn-accent'
+              } btn-accent`}
+              onClick={() => {
+                setTransformValue(3);
+              }}
+            >
+              XY
+            </button>
+          </div>
+          <button
+            className="btn btn-soft btn-accent"
+            style={{ marginTop: '4px' }}
+            onClick={() => handleTransform(0, 0)}
+          >
+            OK
+          </button>
         </div>
       )}
 
