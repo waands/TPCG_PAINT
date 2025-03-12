@@ -11,11 +11,13 @@ function App() {
   const [pixelSize, setPixelSize] = useState(10);
   const [canvasSize, setCanvasSize] = useState({
     width: Math.floor((window.innerWidth - 200) / pixelSize) * pixelSize,
-    height: Math.floor((window.innerHeight - 300) / pixelSize) * pixelSize,
+    height: Math.floor((window.innerHeight - 362) / pixelSize) * pixelSize,
   });
   const [mode, setMode] = useState<string | null>(null);
   const [drawnShapes, setDrawnShapes] = useState<Shape[]>([]);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<"DDA" | "Bresenham">("DDA");
+  const [selectedColor, setSelectedColor] = useState<string>('#000');
+  const [selectedShape, setSelectedShape] = useState<Shape | null>(null);
 
 
   return (
@@ -42,8 +44,11 @@ function App() {
         drawnShapes={drawnShapes}
         setDrawnShapes={setDrawnShapes}
         selectedAlgorithm={selectedAlgorithm}
+        selectedColor={selectedColor}
+        setSelectedShape={setSelectedShape}
+        selectedShape={selectedShape}
       />
-      <Functionalities mode={mode} setMode={setMode} setDrawnShapes={setDrawnShapes} />
+      <Functionalities mode={mode} setMode={setMode} setDrawnShapes={setDrawnShapes} setSelectedColor={setSelectedColor} selectedColor={selectedColor} setSeletedAlgorithm={setSelectedAlgorithm} selectedAlgorithm={selectedAlgorithm} selectedShape={selectedShape}/>
     </div>
   );
 }

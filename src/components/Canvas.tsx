@@ -12,6 +12,9 @@ interface CanvasProps {
   drawnShapes: Shape[];
   setDrawnShapes: Dispatch<SetStateAction<Shape[]>>;
   selectedAlgorithm: "DDA" | "Bresenham";
+  selectedColor: string;
+  setSelectedShape: Dispatch<SetStateAction<Shape | null>>;
+  selectedShape: Shape | null;
 }
 
 export const colorPixel = (
@@ -19,11 +22,12 @@ export const colorPixel = (
   x: number,
   y: number,
   pixelSize: number,
+  selectedColor: string,
 ) => {
-  ctx.fillStyle = 'black';
+  ctx.fillStyle = selectedColor;
   ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
 
-  console.log(`Pintando pixel em (${x}, ${y})`);
+  //console.log(`Pintando pixel em (${x}, ${y})`);
 };
 
 const Canvas: React.FC<CanvasProps> = ({
@@ -35,11 +39,13 @@ const Canvas: React.FC<CanvasProps> = ({
   drawnShapes,
   setDrawnShapes,
   selectedAlgorithm,
+  selectedColor,  
+  setSelectedShape,
+  selectedShape,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
   const lastHighlightedRef = useRef<{ x: number; y: number } | null>(null);
-  const [selectedShape, setSelectedShape] = useState<Shape | null>(null);
 
   // Função para destacar a posição do mouse
 /*
@@ -129,20 +135,6 @@ const Canvas: React.FC<CanvasProps> = ({
     // Adicionar o evento de mousemove para destacar o pixel do mouse
     //canvas.addEventListener('mousemove', highlightMousePosition);
   }, [canvasSize, drawnShapes, showGrid, gridThickness, pixelSize]);
-
-
-  const applyTranslation = (tx: number, ty: number) => {
-    if (!selectedShape) return;
-  
-    setDrawnShapes((prevShapes) =>
-      prevShapes.map((shape) => {
-        if (shape === selectedShape) {
-          shape.translate(tx, ty);
-        }
-        return shape;
-      })
-    );
-  };
   
   
   
@@ -150,17 +142,31 @@ const Canvas: React.FC<CanvasProps> = ({
   const getClickedShape = (x: number, y: number): Shape | undefined => {
     console.log("🔍 Buscando forma no ponto:", x, y);
   
-    return drawnShapes.find((shape) => {
-      console.log("Shape:", shape);
-      console.log("É instância de Line?", shape instanceof Line);
-  
+    // Passo 1: Filtrar formas cujo bounding box contém o ponto
+    const possibleShapes = drawnShapes.filter((shape) => {
       if (shape instanceof Line) {
-        console.log("🎯 Verificando linha:", shape);
+        const { start, end } = shape;
+        const xMin = Math.min(start.x, end.x) - pixelSize;
+        const xMax = Math.max(start.x, end.x) + pixelSize;
+        const yMin = Math.min(start.y, end.y) - pixelSize;
+        const yMax = Math.max(start.y, end.y) + pixelSize;
   
-        // Extrai os pontos da linha
+        return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
+      }
+      return false;
+    });
+  
+    console.log(`🎯 ${possibleShapes.length} linhas possíveis`);
+  
+    // Passo 2: Refinar com a distância real
+    let closestShape: Shape | undefined = undefined;
+    let minDistance = Infinity;
+  
+    possibleShapes.forEach((shape) => {
+      if (shape instanceof Line) {
         const { start, end } = shape;
   
-        // Calcula a distância do ponto (x, y) até a linha
+        // Calcula a distância real usando a fórmula ponto-reta
         const distanceToLine = (px: number, py: number, x1: number, y1: number, x2: number, y2: number) => {
           const A = x2 - x1;
           const B = y2 - y1;
@@ -182,14 +188,19 @@ const Canvas: React.FC<CanvasProps> = ({
         };
   
         const dist = distanceToLine(x, y, start.x, start.y, end.x, end.y);
-        console.log("📏 Distância até a linha:", dist);
+        console.log(`📏 Distância até linha ${shape}: ${dist}`);
   
-        return dist < pixelSize ? shape : undefined; // Retorna a linha se estiver próxima
+        if (dist < pixelSize && dist < minDistance) {
+          minDistance = dist;
+          closestShape = shape;
+        }
       }
-      
-      return undefined;
     });
+  
+    console.log("✅ Forma mais próxima encontrada:", closestShape);
+    return closestShape;
   };
+  
   
   
 
@@ -206,14 +217,29 @@ const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
       console.log("Ponto 1:", newClicks[0], "Ponto 2:", newClicks[1]);
 
       if (mode === "line") {
-        const newLine = new Line(newClicks[0], newClicks[1], selectedAlgorithm);
-        setDrawnShapes((prevShapes) =>
-          prevShapes.map((shape) =>
-            Object.assign(Object.create(Object.getPrototypeOf(shape)), shape)
-          ).concat(newLine)      
-        );
-        console.log("Linhas desenhadas: ", drawnShapes);
+        setSelectedShape(null);
+        const newLine = new Line(newClicks[0], newClicks[1], selectedAlgorithm, selectedColor);
+      
+        setDrawnShapes((prevShapes) => {
+          // Verifica se já existe uma linha com os mesmos pontos
+          const alreadyExists = prevShapes.some(
+            (shape) =>
+              shape instanceof Line &&
+              ((shape.start.x === newLine.start.x && shape.start.y === newLine.start.y &&
+                shape.end.x === newLine.end.x && shape.end.y === newLine.end.y) ||
+               (shape.start.x === newLine.end.x && shape.start.y === newLine.end.y &&
+                shape.end.x === newLine.start.x && shape.end.y === newLine.start.y))
+          );
+
+          if (alreadyExists) {
+            console.log("🚨 Linha duplicada detectada, não adicionando!");
+            return prevShapes; // Retorna o mesmo estado sem adicionar a duplicata
+          }
+            console.log("🎨 Adicionando nova linha:", drawnShapes);
+          return [...prevShapes, newLine];
+        });
       }
+      
 
       return [];
     }
@@ -223,10 +249,21 @@ const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     // Verificar se clicou em alguma forma
     const clickedShape = getClickedShape(x, y);
     //console.log("Clique na linhaaa: ", clickedShape);
+
+    setDrawnShapes((prevShapes) =>
+      prevShapes.map((shape) => {
+        if (shape === clickedShape) {
+          shape.select();
+        } else {
+          shape.deselect();
+        }
+        return shape;
+      })
+    );
+
     if (clickedShape) {
       console.log("Clique na linha: ", clickedShape);
       setSelectedShape(clickedShape);
-      applyTranslation(1, 1);
     }
   } 
 };
