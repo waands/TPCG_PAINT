@@ -105,7 +105,17 @@ class Line extends Shape {
     eixo: number,
   ) {
     compositeTransform(this, tx, ty, sx, sy, theta, eixo);
-    console.log(this);
+    if (sx != 0 || sy != 0) {
+      this.start.x = Math.floor(this.start.x);
+      this.start.y = Math.floor(this.start.y);
+      this.end.x = Math.ceil(this.end.x);
+      this.end.y = Math.ceil(this.end.y);
+    } else {
+      this.start.x = Math.round(this.start.x);
+      this.start.y = Math.round(this.start.y);
+      this.end.x = Math.round(this.end.x);
+      this.end.y = Math.round(this.end.y);
+    }
   }
 }
 
