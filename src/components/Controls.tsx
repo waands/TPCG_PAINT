@@ -9,6 +9,8 @@ interface ControlsProps {
   setPixelSize: (value: number) => void;
   canvasSize: { width: number; height: number };
   setCanvasSize: (value: { width: number; height: number }) => void;
+  setHighlight: (value: boolean) => void;
+  highlight: boolean;
 }
 
 const Controls: React.FC<ControlsProps> = ({
@@ -20,6 +22,8 @@ const Controls: React.FC<ControlsProps> = ({
   setPixelSize,
   canvasSize,
   setCanvasSize,
+  setHighlight,
+  highlight,
 }) => {
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,
@@ -57,7 +61,10 @@ const Controls: React.FC<ControlsProps> = ({
       height: Math.floor(newCanvasSize.height / pixelSize) * pixelSize,
     });
     console.log(newCanvasSize);
-    setCanvasSize({width: Math.floor(newCanvasSize.width / pixelSize) * pixelSize, height: Math.floor(newCanvasSize.height / pixelSize) * pixelSize});
+    setCanvasSize({
+      width: Math.floor(newCanvasSize.width / pixelSize) * pixelSize,
+      height: Math.floor(newCanvasSize.height / pixelSize) * pixelSize,
+    });
     console.log(canvasSize);
   };
 
@@ -188,19 +195,38 @@ const Controls: React.FC<ControlsProps> = ({
             style={{ backgroundColor: '#f5f5f5' }}
           >
             <li>
-              <a onClickCapture={() => setPixelSize(1)}>1</a>
+              <a
+                style={{
+                  backgroundColor: pixelSize === 1 ? '#e0e0e0' : '#f5f5f5',
+                }}
+                onClickCapture={() => setPixelSize(1)}
+              >
+                1
+              </a>
             </li>
             <li>
-              <a onClickCapture={() => setPixelSize(5)}>5</a>
+              <a style={{
+                  backgroundColor: pixelSize === 5 ? '#e0e0e0' : '',
+                }}
+                onClickCapture={() => setPixelSize(5)}>2</a>
             </li>
             <li>
-              <a onClickCapture={() => setPixelSize(10)}>10</a>
+              <a style={{
+                  backgroundColor: pixelSize === 10 ? '#e0e0e0' : '',
+                }}
+                onClickCapture={() => setPixelSize(10)}>3</a>
             </li>
             <li>
-              <a onClickCapture={() => setPixelSize(20)}>20</a>
+              <a style={{
+                  backgroundColor: pixelSize === 20 ? '#e0e0e0' : '',
+                }}
+                onClickCapture={() => setPixelSize(20)}>4</a>
             </li>
             <li>
-              <a onClickCapture={() => setPixelSize(25)}>25</a>
+              <a style={{
+                  backgroundColor: pixelSize === 25 ? '#e0e0e0' : '',
+                }}
+                onClickCapture={() => setPixelSize(25)}>5</a>
             </li>
           </ul>
         </div>
@@ -293,6 +319,24 @@ const Controls: React.FC<ControlsProps> = ({
             </li>
           </ul>
         </div>
+        <button
+          className="btn btn-dash"
+          style={{ backgroundColor: '#f5f5f5' }}
+          onClick={() => setHighlight(!highlight)}
+        >
+          {highlight ? (
+            <>
+              Ocultar
+              <br /> Highlight
+            </>
+          ) : (
+            <>
+              Mostrar <br />
+              Highlight
+            </>
+          )}
+        </button>
+        
       </div>
     </div>
   );

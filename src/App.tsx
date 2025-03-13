@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import CanvasGrid from './zzold/CanvasGrid';
+import { useState, useRef, useEffect } from 'react';
+import MouseHighlight from './extra/MouseHighlight';
 import Controls from './components/Controls';
 import Functionalities from './components/Functionalities';
 import Canvas from './components/Canvas';
@@ -21,10 +21,21 @@ function App() {
   const [selectedColor, setSelectedColor] = useState<string>('#000');
   const [selectedShape, setSelectedShape] = useState<Shape | null>(null);
 
+  const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [highlight, setHighlight] = useState<boolean>(true);
+
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
       <h1>Editor Gráfico</h1>
       <p>Wanderson Teixeira dos Reis Junior</p>
+      <div className="badge badge-soft badge-neutral"
+        style={{ position: 'absolute', top: '10px', right: '10px' }}
+      >x: {mousePos.x} | y:{mousePos.y}</div>
+
+      <div className={`badge ${mode === 'transform' ? 'badge-accent' : mode === 'line' ? 'badge-primary' : mode === 'circle' ? 'badge-secondary' : 'badge-ghost' }`}
+        style={{ position: 'absolute', top: '10px', left: '10px' }}
+      >{mode === 'transform' ? 'Transformada' : mode === 'line' ? 'Reta' : mode === 'circle' ? 'Círculo' : '' }</div>
+      
       <Controls
         showGrid={showGrid}
         setShowGrid={setShowGrid}
@@ -34,8 +45,10 @@ function App() {
         setPixelSize={setPixelSize}
         canvasSize={canvasSize}
         setCanvasSize={setCanvasSize}
+        setHighlight={setHighlight}
+        highlight={highlight}
       />
-      {/*<CanvasGrid showGrid={showGrid} gridThickness={gridThickness} pixelSize={pixelSize} />*/}
+      {highlight && (<MouseHighlight pixelSize={pixelSize} canvasSize={canvasSize} mousePos={mousePos} />)}
       <Canvas
         showGrid={showGrid}
         gridThickness={gridThickness}
@@ -48,6 +61,7 @@ function App() {
         selectedColor={selectedColor}
         setSelectedShape={setSelectedShape}
         selectedShape={selectedShape}
+        setMousePos={setMousePos}
       />
       <Functionalities
         mode={mode}
