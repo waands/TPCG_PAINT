@@ -80,6 +80,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
 
       // Atualizar o estado com o novo array de formas
       setDrawnShapes(newShapes);
+      setReRender(!reRender);
     }
   };
 
