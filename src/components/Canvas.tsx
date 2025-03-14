@@ -5,8 +5,6 @@ import React, {
   Dispatch,
   SetStateAction,
 } from 'react';
-import { drawDDA } from '../utils/LineAlg';
-import { translacao } from '../utils/TransformGeo2D';
 import { Shape, Line } from '../utils/Shapes';
 
 interface CanvasProps {
@@ -22,6 +20,8 @@ interface CanvasProps {
   setSelectedShape: Dispatch<SetStateAction<Shape | null>>;
   selectedShape: Shape | null;
   setMousePos: Dispatch<SetStateAction<{ x: number; y: number }>>;
+  reRender: boolean;
+  setReRender: Dispatch<SetStateAction<boolean>>;
 }
 
 export const colorPixel = (
@@ -49,9 +49,12 @@ const Canvas: React.FC<CanvasProps> = ({
   selectedColor,
   setSelectedShape,
   selectedShape,
-  setMousePos
+  setMousePos,
+  reRender,
+  setReRender,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [prevSelectedShape, setPrevSelectedShape] = useState<Shape | null>(null);
   const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
 
   // Função para destacar a posição do mouse
@@ -106,7 +109,37 @@ const Canvas: React.FC<CanvasProps> = ({
     canvas.addEventListener('mousemove', highlightMousePosition);
     return () => canvas.removeEventListener('mousemove', highlightMousePosition);
 
-  }, [canvasSize, drawnShapes, showGrid, gridThickness, pixelSize]);
+  }, [canvasSize, showGrid, gridThickness, pixelSize, reRender]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    if (selectedShape){
+      //console.log("prevSelected: ", prevSelectedShape);
+      if (prevSelectedShape != null){
+        drawnShapes.map((shape) => {
+          if (shape === prevSelectedShape) {
+            shape.draw(ctx, pixelSize);
+          }
+          return shape;
+        })
+
+      }
+      drawnShapes.map((shape) => {
+        if (shape === selectedShape) {
+          shape.draw(ctx, pixelSize);
+        }
+        return shape;
+      })
+    } else if (drawnShapes.length > 0) {
+        const lastShape = drawnShapes[drawnShapes.length - 1];
+        lastShape.draw(ctx, pixelSize);
+    }
+
+}, [drawnShapes, selectedShape]);
 
   const getClickedShape = (x: number, y: number): Shape | undefined => {
     console.log('🔍 Buscando forma no ponto:', x, y);
@@ -190,6 +223,7 @@ const Canvas: React.FC<CanvasProps> = ({
           console.log('Ponto 1:', newClicks[0], 'Ponto 2:', newClicks[1]);
 
           if (mode === 'line') {
+            console.log("selectedAlgorithm: ", selectedAlgorithm);
             setSelectedShape(null);
             const newLine = new Line(
               newClicks[0],
@@ -243,6 +277,9 @@ const Canvas: React.FC<CanvasProps> = ({
           }),
         );
         console.log('Clique na linha: ', clickedShape);
+        if (selectedShape) {
+          setPrevSelectedShape(selectedShape);
+        }
         setSelectedShape(clickedShape);
       }
     }

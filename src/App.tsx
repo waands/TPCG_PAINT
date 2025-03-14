@@ -23,6 +23,8 @@ function App() {
 
   const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [highlight, setHighlight] = useState<boolean>(true);
+  
+  const [reRender , setReRender] = useState<boolean>(false);
 
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -62,6 +64,8 @@ function App() {
         setSelectedShape={setSelectedShape}
         selectedShape={selectedShape}
         setMousePos={setMousePos}
+        setReRender={setReRender}
+        reRender={reRender}
       />
       <Functionalities
         mode={mode}
@@ -73,6 +77,9 @@ function App() {
         setSeletedAlgorithm={setSelectedAlgorithm}
         selectedAlgorithm={selectedAlgorithm}
         selectedShape={selectedShape}
+        setSelectedShape={setSelectedShape}
+        setReRender={setReRender}
+        reRender={reRender}
       />
     </div>
   );

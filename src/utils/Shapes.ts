@@ -1,5 +1,5 @@
-import { drawDDA } from './LineAlg';
-import { translacao, compositeTransform } from './TransformGeo2D';
+import { drawDDA, drawBresenham } from './LineAlg';
+import { compositeTransform } from './TransformGeo2D';
 //import { drawBresenham } from "../algorithms/Bresenham";
 
 abstract class Shape {
@@ -63,18 +63,19 @@ class Line extends Shape {
         pixelSize,
         this.color,
       );
-    } else {
-      //drawBresenham(ctx, this.start.x, this.start.y, this.end.x, this.end.y, pixelSize);
+    } else if (this.algorithm === 'Bresenham') {
+      drawBresenham(
+        ctx,
+        this.start.x,
+        this.start.y,
+        this.end.x,
+        this.end.y,
+        pixelSize,
+        this.color,
+      );
     }
 
     if (this.isSelected) {
-      /*
-      if (this.color === '#000000' || this.color === '#FFFFFF') {
-        ctx.fillStyle = 'red';
-      } else {
-        ctx.fillStyle = `#${this.color.slice(1).split('').reverse().join('')}`;
-      }
-      */
       ctx.fillStyle = '#17B29E';
       ctx.beginPath();
       ctx.fillRect(

@@ -43,11 +43,14 @@ export const createScaleMatrix = (sx: number, sy: number) => [
   [0, 0, 1],
 ];
 
-export const createRotationMatrix = (theta: number) => [
-  [Math.cos(theta), -Math.sin(theta), 0],
-  [Math.sin(theta), Math.cos(theta), 0],
-  [0, 0, 1],
-];
+export const createRotationMatrix = (theta: number) => {
+  const radians = (theta * Math.PI) / 180; // Conversão para radianos
+  return [
+    [Math.cos(radians), -Math.sin(radians), 0],
+    [Math.sin(radians), Math.cos(radians), 0],
+    [0, 0, 1],
+  ];
+};
 
 export const createReflectionMatrix = (eixo: number) => {
   //eixo x = 1, eixo y = 2, eixo xy = 3
