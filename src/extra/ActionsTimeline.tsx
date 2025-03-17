@@ -150,7 +150,7 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
             ? 'Escalar'
             : transformType === 'rotate'
             ? 'Rotacionar'
-            : transformType === 'reflect'
+            : transformType === 'reflection'
             ? 'Refletir'
             : ''}
         </div>
