@@ -122,16 +122,25 @@ export const compositeTransform = (
     ),
   );
 
+  const uniformScaleFactor = sx; //para manter a escala uniforme do circulo
+
   // Aplicar a matriz ao shape
-  return applyTransformation(shape, transformMatrix);
+  return applyTransformation(shape, transformMatrix, uniformScaleFactor);
 };
 
-const applyTransformation = (shape: Shape, matrix: number[][]) => {
+const applyTransformation = (
+  shape: Shape,
+  matrix: number[][],
+  scaleFactor: number,
+) => {
   if (shape instanceof Line) {
     shape.start = applyMatrixToPoint(shape.start, matrix);
     shape.end = applyMatrixToPoint(shape.end, matrix);
   } else if (shape instanceof Circle) {
     shape.center = applyMatrixToPoint(shape.center, matrix);
+    if (scaleFactor) {
+      shape.radius *= scaleFactor;
+    }
   }
   return shape;
 };

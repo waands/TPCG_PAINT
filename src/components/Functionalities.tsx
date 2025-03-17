@@ -474,11 +474,12 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
         } `}
         onClick={() => {
           setMode('circle');
+          setSeletedAlgorithm('Bresenham');
           if (selectedShape) {
             selectedShape.deselect();
             setDrawnShapes((prevShapes) => [...prevShapes]); // Força a atualização
           }
-          setSelectedShape(null);
+          //setSelectedShape(null);
         }}
       >
         Círculo

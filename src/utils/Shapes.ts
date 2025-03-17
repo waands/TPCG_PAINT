@@ -1,5 +1,6 @@
 import { drawDDA, drawBresenham } from './LineAlg';
 import { compositeTransform } from './TransformGeo2D';
+import { drawBresenhamCircle } from './CircleAlg';
 //import { drawBresenham } from "../algorithms/Bresenham";
 
 abstract class Shape {
@@ -124,28 +125,104 @@ class Line extends Shape {
 class Circle extends Shape {
   center: { x: number; y: number };
   radius: number;
+  algorithm: 'Bresenham';
+  color: string;
+  isSelected: boolean;
 
-  constructor(center: { x: number; y: number }, radius: number) {
+  constructor(
+    center: { x: number; y: number },
+    radius: number,
+    algorithm: 'Bresenham',
+    color: string,
+  ) {
     super('circle');
     this.center = center;
     this.radius = radius;
+    this.algorithm = algorithm;
+    this.color = color;
+    this.isSelected = false;
   }
 
   draw(ctx: CanvasRenderingContext2D, pixelSize: number) {
-    ctx.beginPath();
-    ctx.arc(
-      this.center.x * pixelSize,
-      this.center.y * pixelSize,
-      this.radius * pixelSize,
-      0,
-      Math.PI * 2,
-    );
-    ctx.stroke();
+    if (this.algorithm === 'Bresenham') {
+      drawBresenhamCircle(
+        ctx,
+        this.center.x,
+        this.center.y,
+        this.radius,
+        pixelSize,
+        this.color,
+      );
+    }
+
+    if (this.isSelected) {
+      ctx.fillStyle = '#17B29E';
+      /*
+      ctx.beginPath();
+      ctx.fillRect(
+        Math.round(this.center.x) * pixelSize,
+        Math.round(this.center.y) * pixelSize,
+        pixelSize,
+        pixelSize,
+      );
+      ctx.fill();
+      */
+      ctx.beginPath();
+      ctx.fillRect(
+        this.center.x * pixelSize + this.radius * pixelSize,
+        this.center.y * pixelSize,
+        pixelSize,
+        pixelSize,
+      );
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.fillRect(
+        this.center.x * pixelSize,
+        this.center.y * pixelSize + this.radius * pixelSize,
+        pixelSize,
+        pixelSize,
+      );
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.fillRect(
+        this.center.x * pixelSize,
+        this.center.y * pixelSize - this.radius * pixelSize,
+        pixelSize,
+        pixelSize,
+      );
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.fillRect(
+        this.center.x * pixelSize - this.radius * pixelSize,
+        this.center.y * pixelSize,
+        pixelSize,
+        pixelSize,
+      );
+      ctx.fill();
+    }
   }
 
-  translate(tx: number, ty: number) {
-    this.center.x += tx;
-    this.center.y += ty;
+  translate(
+    tx: number,
+    ty: number,
+    sx: number,
+    sy: number,
+    theta: number,
+    eixo: number,
+  ) {
+    compositeTransform(this, tx, ty, sx, sy, theta, eixo);
+    if (sx != 0 || sy != 0) {
+      this.center.x = Math.floor(this.center.x);
+      this.center.y = Math.floor(this.center.y);
+      this.radius = Math.ceil(this.radius);
+    } else {
+      this.center.x = Math.round(this.center.x);
+      this.center.y = Math.round(this.center.y);
+      this.radius = Math.round(this.radius);
+    }
   }
 }
 

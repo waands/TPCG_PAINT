@@ -5,7 +5,7 @@ import React, {
   Dispatch,
   SetStateAction,
 } from 'react';
-import { Shape, Line } from '../utils/Shapes';
+import { Shape, Line, Circle } from '../utils/Shapes';
 
 interface CanvasProps {
   mode: string | null;
@@ -54,7 +54,9 @@ const Canvas: React.FC<CanvasProps> = ({
   setReRender,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [prevSelectedShape, setPrevSelectedShape] = useState<Shape | null>(null);
+  const [prevSelectedShape, setPrevSelectedShape] = useState<Shape | null>(
+    null,
+  );
   const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
 
   // Função para destacar a posição do mouse
@@ -107,8 +109,8 @@ const Canvas: React.FC<CanvasProps> = ({
 
     // Adicionar o evento de mousemove para destacar o pixel do mouse
     canvas.addEventListener('mousemove', highlightMousePosition);
-    return () => canvas.removeEventListener('mousemove', highlightMousePosition);
-
+    return () =>
+      canvas.removeEventListener('mousemove', highlightMousePosition);
   }, [canvasSize, showGrid, gridThickness, pixelSize, reRender]);
 
   useEffect(() => {
@@ -121,18 +123,18 @@ const Canvas: React.FC<CanvasProps> = ({
       prevSelectedShape?.deselect();
     }
 
-    if (selectedShape){
+    if (selectedShape) {
       //console.log("prevSelected: ", prevSelectedShape);
       if (mode != 'transform') {
         prevSelectedShape?.deselect();
       }
-      if (prevSelectedShape != null){
+      if (prevSelectedShape != null) {
         drawnShapes.map((shape) => {
           if (shape === prevSelectedShape) {
             shape.draw(ctx, pixelSize);
           }
           return shape;
-        })
+        });
         setPrevSelectedShape(null);
       }
       drawnShapes.map((shape) => {
@@ -140,17 +142,16 @@ const Canvas: React.FC<CanvasProps> = ({
           shape.draw(ctx, pixelSize);
         }
         return shape;
-      })
+      });
     } else if (drawnShapes.length > 0) {
-        const lastShape = drawnShapes[drawnShapes.length - 1];
-        lastShape.draw(ctx, pixelSize);
+      const lastShape = drawnShapes[drawnShapes.length - 1];
+      lastShape.draw(ctx, pixelSize);
     }
-
-}, [drawnShapes, selectedShape, mode]);
+  }, [drawnShapes, selectedShape, mode]);
 
   const getClickedShape = (x: number, y: number): Shape | undefined => {
-    //console.log('🔍 Buscando forma no ponto:', x, y);
-
+    console.log('🔍 Buscando forma no ponto:', x, y);
+  
     // Passo 1: Filtrar formas cujo bounding box contém o ponto
     const possibleShapes = drawnShapes.filter((shape) => {
       if (shape instanceof Line) {
@@ -159,23 +160,29 @@ const Canvas: React.FC<CanvasProps> = ({
         const xMax = Math.max(start.x, end.x) + pixelSize;
         const yMin = Math.min(start.y, end.y) - pixelSize;
         const yMax = Math.max(start.y, end.y) + pixelSize;
-
+        return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
+      } else if (shape instanceof Circle) {
+        // Supondo que a classe Circle possua { center: {x, y}, radius }
+        const { center, radius } = shape;
+        const xMin = center.x - radius - pixelSize;
+        const xMax = center.x + radius + pixelSize;
+        const yMin = center.y - radius - pixelSize;
+        const yMax = center.y + radius + pixelSize;
         return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
       }
       return false;
     });
-
-    //console.log(`🎯 ${possibleShapes.length} linhas possíveis`);
-
+  
+    console.log(`🎯 ${possibleShapes.length} formas possíveis`);
+  
     // Passo 2: Refinar com a distância real
     let closestShape: Shape | undefined = undefined;
     let minDistance = Infinity;
-
+  
     possibleShapes.forEach((shape) => {
       if (shape instanceof Line) {
         const { start, end } = shape;
-
-        // Calcula a distância real usando a fórmula ponto-reta
+        // Função para calcular a distância do ponto à linha
         const distanceToLine = (
           px: number,
           py: number,
@@ -188,34 +195,46 @@ const Canvas: React.FC<CanvasProps> = ({
           const B = y2 - y1;
           const C = x1 - px;
           const D = y1 - py;
-
           const numerator = Math.abs(A * D - C * B);
           const denominator = Math.sqrt(A * A + B * B);
           if (denominator === 0) return Infinity; // Linha degenerada em um ponto
-
           const distance = numerator / denominator;
-
           // Verifica se o ponto projetado está dentro dos limites da linha
           const dot = (px - x1) * (x2 - x1) + (py - y1) * (y2 - y1);
           const lenSq = (x2 - x1) ** 2 + (y2 - y1) ** 2;
-          if (dot < 0 || dot > lenSq) return Infinity; // Fora dos limites da linha
-
+          if (dot < 0 || dot > lenSq) return Infinity;
           return distance;
         };
-
+  
         const dist = distanceToLine(x, y, start.x, start.y, end.x, end.y);
-        //console.log(`📏 Distância até linha ${shape}: ${dist}`);
-
-        if (dist < pixelSize && dist < minDistance) {
+        console.log(`📏 Distância até linha ${shape}: ${dist}`);
+  
+        if (dist < pixelSize *2 && dist < minDistance) {
           minDistance = dist;
+          closestShape = shape;
+        }
+      } else if (shape instanceof Circle) {
+        // Supondo que a classe Circle possua propriedades center e radius
+        const { center, radius } = shape;
+        const dx = x - center.x;
+        const dy = y - center.y;
+        // Distância do clique ao centro
+        const distanceFromCenter = Math.sqrt(dx * dx + dy * dy);
+        // Diferença entre a distância do clique e o raio
+        const distanceToCircumference = Math.abs(distanceFromCenter - radius);
+        console.log(`📏 Distância até círculo ${shape}: ${distanceToCircumference}`);
+  
+        if (distanceToCircumference < pixelSize && distanceToCircumference < minDistance) {
+          minDistance = distanceToCircumference;
           closestShape = shape;
         }
       }
     });
-
-    //console.log('✅ Forma mais próxima encontrada:', closestShape);
+  
+    console.log('✅ Forma mais próxima encontrada:', closestShape);
     return closestShape;
   };
+  
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -260,6 +279,37 @@ const Canvas: React.FC<CanvasProps> = ({
               }
               //console.log('🎨 Adicionando nova linha:', drawnShapes);
               return [...prevShapes, newLine];
+            });
+          }
+          if (mode === 'circle') {
+            setSelectedShape(null);
+
+            const newCircle = new Circle(
+              newClicks[0],
+              //descobre a hipotenusa entre o ponto x0 e x1 e y0 e y1
+              Math.round(
+                Math.sqrt(
+                  Math.pow(newClicks[1].x - newClicks[0].x, 2) +
+                    Math.pow(newClicks[1].y - newClicks[0].y, 2),
+                ),
+              ),
+              'Bresenham',
+              selectedColor,
+            );
+
+            setDrawnShapes((prevShapes) => {
+              const alreadyExists = prevShapes.some(
+                (shape) =>
+                  shape instanceof Circle &&
+                  shape.center.x === newCircle.center.x &&
+                  shape.center.y === newCircle.center.y &&
+                  shape.radius === newCircle.radius,
+              );
+
+              if (alreadyExists) {
+                return prevShapes;
+              }
+              return [...prevShapes, newCircle];
             });
           }
 
