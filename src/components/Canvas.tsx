@@ -117,8 +117,15 @@ const Canvas: React.FC<CanvasProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    if (mode != 'transform') {
+      prevSelectedShape?.deselect();
+    }
+
     if (selectedShape){
       //console.log("prevSelected: ", prevSelectedShape);
+      if (mode != 'transform') {
+        prevSelectedShape?.deselect();
+      }
       if (prevSelectedShape != null){
         drawnShapes.map((shape) => {
           if (shape === prevSelectedShape) {
@@ -126,7 +133,7 @@ const Canvas: React.FC<CanvasProps> = ({
           }
           return shape;
         })
-
+        setPrevSelectedShape(null);
       }
       drawnShapes.map((shape) => {
         if (shape === selectedShape) {
@@ -139,10 +146,10 @@ const Canvas: React.FC<CanvasProps> = ({
         lastShape.draw(ctx, pixelSize);
     }
 
-}, [drawnShapes, selectedShape]);
+}, [drawnShapes, selectedShape, mode]);
 
   const getClickedShape = (x: number, y: number): Shape | undefined => {
-    console.log('🔍 Buscando forma no ponto:', x, y);
+    //console.log('🔍 Buscando forma no ponto:', x, y);
 
     // Passo 1: Filtrar formas cujo bounding box contém o ponto
     const possibleShapes = drawnShapes.filter((shape) => {
@@ -158,7 +165,7 @@ const Canvas: React.FC<CanvasProps> = ({
       return false;
     });
 
-    console.log(`🎯 ${possibleShapes.length} linhas possíveis`);
+    //console.log(`🎯 ${possibleShapes.length} linhas possíveis`);
 
     // Passo 2: Refinar com a distância real
     let closestShape: Shape | undefined = undefined;
@@ -197,7 +204,7 @@ const Canvas: React.FC<CanvasProps> = ({
         };
 
         const dist = distanceToLine(x, y, start.x, start.y, end.x, end.y);
-        console.log(`📏 Distância até linha ${shape}: ${dist}`);
+        //console.log(`📏 Distância até linha ${shape}: ${dist}`);
 
         if (dist < pixelSize && dist < minDistance) {
           minDistance = dist;
@@ -206,7 +213,7 @@ const Canvas: React.FC<CanvasProps> = ({
       }
     });
 
-    console.log('✅ Forma mais próxima encontrada:', closestShape);
+    //console.log('✅ Forma mais próxima encontrada:', closestShape);
     return closestShape;
   };
 
@@ -223,7 +230,7 @@ const Canvas: React.FC<CanvasProps> = ({
           console.log('Ponto 1:', newClicks[0], 'Ponto 2:', newClicks[1]);
 
           if (mode === 'line') {
-            console.log("selectedAlgorithm: ", selectedAlgorithm);
+            //console.log("selectedAlgorithm: ", selectedAlgorithm);
             setSelectedShape(null);
             const newLine = new Line(
               newClicks[0],
@@ -248,10 +255,10 @@ const Canvas: React.FC<CanvasProps> = ({
               );
 
               if (alreadyExists) {
-                console.log('🚨 Linha duplicada detectada, não adicionando!');
+                //console.log('🚨 Linha duplicada detectada, não adicionando!');
                 return prevShapes; // Retorna o mesmo estado sem adicionar a duplicata
               }
-              console.log('🎨 Adicionando nova linha:', drawnShapes);
+              //console.log('🎨 Adicionando nova linha:', drawnShapes);
               return [...prevShapes, newLine];
             });
           }

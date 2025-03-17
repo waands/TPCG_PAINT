@@ -113,9 +113,9 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             style={{
               position: 'absolute',
               zIndex: 1,
-              right: '100%', 
+              right: '100%',
               top: '0%',
-              marginRight: '10px', 
+              marginRight: '10px',
             }}
           >
             <ColorPicker onChangeComplete={handleColorChange} />
@@ -413,7 +413,6 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             selectedShape.deselect();
             setDrawnShapes((prevShapes) => [...prevShapes]); // Força a atualização
           }
-          setSelectedShape(null);
         }}
       >
         <button
@@ -426,6 +425,8 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
           } `}
           onClick={() => {
             setMode('line');
+            selectedShape?.deselect();
+            //setSelectedShape(null);
           }}
         >
           Reta

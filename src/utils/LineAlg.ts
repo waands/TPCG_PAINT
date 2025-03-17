@@ -9,7 +9,7 @@ export const drawDDA = (
   pixelSize: number,
   selectedColor: string,
 ) => {
-  console.log('DDA');
+  //console.log('DDA');
   let dx = x2 - x1;
   let dy = y2 - y1;
   let passos = Math.max(Math.abs(dx), Math.abs(dy));
@@ -38,7 +38,7 @@ export const drawBresenham = (
   pixelSize: number,
   selectedColor: string,
 ) => {
-  console.log('Bresenham');
+  //console.log('Bresenham');
   let dx = x2 - x1;
   let dy = y2 - y1;
   let x = x1;
