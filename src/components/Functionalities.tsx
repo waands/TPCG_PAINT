@@ -137,9 +137,10 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
           } `}
           onClick={() => {
             setMode('transform');
-            setTransformType('');
+            setTransformType(null);
             setTransformDropdownOpen(!transformDropdownOpen);
             setNewClicks([]);
+            console.log(selectedShape);
           }}
         >
           Transformar

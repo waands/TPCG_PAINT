@@ -34,9 +34,8 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
               : mode === 'circle'
               ? 'badge-secondary'
               : 'badge-ghost'
-          }` 
-          }
-          style={{marginRight: '5px'}}
+          }`}
+          style={{ marginRight: '5px' }}
         >
           {mode === 'transform'
             ? 'Transformar'
@@ -59,14 +58,19 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
               ? 'badge-secondary'
               : 'badge-ghost'
           }`}
-          style={{marginRight: '5px'}}>
+          style={{ marginRight: '5px' }}
+        >
           {selectedAlgorithm}
         </div>
       ) : null}
       {selectedColor && mode != null && mode != 'transform' ? (
         <div
           className="badge badge-soft"
-          style={{ backgroundColor: `${selectedColor}`, color: 'white', marginRight: '5px' }}
+          style={{
+            backgroundColor: `${selectedColor}`,
+            color: 'white',
+            marginRight: '5px',
+          }}
         >
           {selectedColor}
         </div>
@@ -86,7 +90,8 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
               ? 'badge-secondary'
               : 'badge-ghost'
           }`}
-          style={{marginRight: '5px'}}>
+          style={{ marginRight: '5px' }}
+        >
           P1
         </div>
       ) : null}
@@ -104,7 +109,8 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
               ? 'badge-secondary'
               : 'badge-ghost'
           }`}
-          style={{marginRight: '5px'}}>
+          style={{ marginRight: '5px' }}
+        >
           P2
         </div>
       ) : null}
@@ -120,17 +126,35 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
               ? 'badge-secondary'
               : 'badge-ghost'
           }`}
-          style={{marginRight: '5px'}}>
+          style={{ marginRight: '5px' }}
+        >
           Desenhado
+        </div>
+      ) : null}
+      {mode === 'transform' && drawnShapes.some(shape => shape.isSelected) ? (
+        <div
+          className={`badge badge-soft badge-accent`}
+          style={{ marginRight: '5px' }}
+        >
+          Selecionada
         </div>
       ) : null}
       {mode === 'transform' && transformType != null ? (
         <div
           className={`badge badge-soft badge-accent`}
-          style={{marginRight: '5px'}}>
-          {transformType === 'translate' ? "Transladar" : transformType === 'scale' ? "Escalar" : transformType === 'rotate' ? "Rotacionar" : transformType === 'reflect' ? "Refletir" : ""}
+          style={{ marginRight: '5px' }}
+        >
+          {transformType === 'translate'
+            ? 'Transladar'
+            : transformType === 'scale'
+            ? 'Escalar'
+            : transformType === 'rotate'
+            ? 'Rotacionar'
+            : transformType === 'reflect'
+            ? 'Refletir'
+            : ''}
         </div>
-      ): null}
+      ) : null}
     </div>
   );
 };
