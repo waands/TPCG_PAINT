@@ -22,6 +22,9 @@ interface CanvasProps {
   setMousePos: Dispatch<SetStateAction<{ x: number; y: number }>>;
   reRender: boolean;
   setReRender: Dispatch<SetStateAction<boolean>>;
+  newClicks: { x: number; y: number }[];
+  setNewClicks: Dispatch<SetStateAction<{ x: number; y: number }[]>>;
+  //setDrawn: Dispatch<SetStateAction<boolean>>;
 }
 
 export const colorPixel = (
@@ -52,6 +55,9 @@ const Canvas: React.FC<CanvasProps> = ({
   setMousePos,
   reRender,
   setReRender,
+  newClicks,
+  setNewClicks,
+  //setDrawn,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [prevSelectedShape, setPrevSelectedShape] = useState<Shape | null>(
@@ -244,7 +250,9 @@ const Canvas: React.FC<CanvasProps> = ({
 
     if (mode != 'transform') {
       setClicks((prev) => {
+        //setDrawn(false);
         const newClicks = [...prev, { x, y }];
+        setNewClicks(newClicks);
         if (newClicks.length === 2) {
           console.log('Ponto 1:', newClicks[0], 'Ponto 2:', newClicks[1]);
 
@@ -277,9 +285,11 @@ const Canvas: React.FC<CanvasProps> = ({
                 //console.log('🚨 Linha duplicada detectada, não adicionando!');
                 return prevShapes; // Retorna o mesmo estado sem adicionar a duplicata
               }
+              //setDrawn(true);
               //console.log('🎨 Adicionando nova linha:', drawnShapes);
               return [...prevShapes, newLine];
             });
+            
           }
           if (mode === 'circle') {
             setSelectedShape(null);
@@ -309,6 +319,8 @@ const Canvas: React.FC<CanvasProps> = ({
               if (alreadyExists) {
                 return prevShapes;
               }
+
+              //setDrawn(true);
               return [...prevShapes, newCircle];
             });
           }

@@ -4,6 +4,7 @@ import Controls from './components/Controls';
 import Functionalities from './components/Functionalities';
 import Canvas from './components/Canvas';
 import { Shape } from './utils/Shapes';
+import {ActionsTimeline} from './extra/ActionsTimeline';
 
 function App() {
   const [showGrid, setShowGrid] = useState(true);
@@ -26,6 +27,10 @@ function App() {
   
   const [reRender , setReRender] = useState<boolean>(false);
 
+  const [newClicks, setNewClicks] = useState<{x: number; y: number}[]>([]);
+
+  const [transformType, setTransformType] = useState<string | null>(null);
+
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
       <h1>Editor Gráfico</h1>
@@ -34,10 +39,22 @@ function App() {
         style={{ position: 'absolute', top: '10px', right: '10px' }}
       >x: {mousePos.x} | y:{mousePos.y}</div>
 
-      <div className={`badge ${mode === 'transform' ? 'badge-accent' : mode === 'line' ? 'badge-primary' : mode === 'circle' ? 'badge-secondary' : 'badge-ghost' }`}
+      <div style={{position: 'absolute', top: '10px', left: '10px' }}>
+        <ActionsTimeline
+          drawnShapes={drawnShapes}
+          selectedShape={setSelectedShape}
+          mode={mode}
+          selectedAlgorithm={selectedAlgorithm}
+          selectedColor={selectedColor}
+          newClicks={newClicks}
+          transformType={transformType}
+        />
+      </div>
+
+      {/*<div className={`badge ${mode === 'transform' ? 'badge-accent' : mode === 'line' ? 'badge-primary' : mode === 'circle' ? 'badge-secondary' : 'badge-ghost' }`}
         style={{ position: 'absolute', top: '10px', left: '10px' }}
       >{mode === 'transform' ? 'Transformada' : mode === 'line' ? 'Reta' : mode === 'circle' ? 'Círculo' : '' }</div>
-      
+      */}
       <Controls
         showGrid={showGrid}
         setShowGrid={setShowGrid}
@@ -66,6 +83,8 @@ function App() {
         setMousePos={setMousePos}
         setReRender={setReRender}
         reRender={reRender}
+        newClicks={newClicks}
+        setNewClicks={setNewClicks}
       />
       <Functionalities
         mode={mode}
@@ -80,6 +99,9 @@ function App() {
         setSelectedShape={setSelectedShape}
         setReRender={setReRender}
         reRender={reRender}
+        setNewClicks={setNewClicks}
+        setTransformType={setTransformType}
+        transformType={transformType}
       />
     </div>
   );

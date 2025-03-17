@@ -17,6 +17,9 @@ interface FunctionalitiesProps {
   setSelectedShape: Dispatch<SetStateAction<Shape | null>>;
   setReRender: Dispatch<SetStateAction<boolean>>;
   reRender: boolean;
+  setNewClicks: Dispatch<SetStateAction<{ x: number; y: number }[]>>;
+  setTransformType: Dispatch<SetStateAction<string | null>>;
+  transformType: string | null;
 }
 
 const Functionalities: React.FC<FunctionalitiesProps> = ({
@@ -32,10 +35,12 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
   setSelectedShape,
   setReRender,
   reRender,
+  setNewClicks,
+  setTransformType,
+  transformType,
 }) => {
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const [transformValue, setTransformValue] = useState<number>(1);
-  const [transformType, setTransformType] = useState<string>();
   const [transformDropdownOpen, setTransformDropdownOpen] = useState(false);
 
   const handleColorChange = (color: string) => {
@@ -134,6 +139,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             setMode('transform');
             setTransformType('');
             setTransformDropdownOpen(!transformDropdownOpen);
+            setNewClicks([]);
           }}
         >
           Transformar
@@ -413,6 +419,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             selectedShape.deselect();
             setDrawnShapes((prevShapes) => [...prevShapes]); // Força a atualização
           }
+          setNewClicks([]);
         }}
       >
         <button
@@ -426,6 +433,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
           onClick={() => {
             setMode('line');
             selectedShape?.deselect();
+            
             //setSelectedShape(null);
           }}
         >
@@ -474,6 +482,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
         } `}
         onClick={() => {
           setMode('circle');
+          setNewClicks([]);
           setSeletedAlgorithm('Bresenham');
           if (selectedShape) {
             selectedShape.deselect();
@@ -499,6 +508,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
                 prevShapes.filter((shape) => shape !== selectedShape),
               );
               setSelectedShape(null);
+              setNewClicks([]);
               setReRender(!reRender);
             }
           }
@@ -514,6 +524,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             setMode(null);
             setDrawnShapes([]);
             setReRender(!reRender);
+            setNewClicks([]);
           }
         }}
       >

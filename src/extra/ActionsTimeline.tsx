@@ -1,92 +1,137 @@
 import React from 'react';
+import { Shape } from '../utils/Shapes';
 
-const ActionsTimeline: React.FC = () => {
+interface ActionsTimelineProps {
+  drawnShapes: Shape[];
+  selectedShape: React.Dispatch<React.SetStateAction<Shape | null>>;
+  mode: string | null;
+  selectedAlgorithm: 'DDA' | 'Bresenham';
+  selectedColor: string;
+  newClicks: { x: number; y: number }[];
+  transformType: string | null;
+  //drawn: boolean;
+}
+
+export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
+  drawnShapes,
+  selectedShape,
+  mode,
+  selectedAlgorithm,
+  selectedColor,
+  newClicks,
+  transformType,
+  //drawn,
+}) => {
   return (
-    <ul className="timeline">
-      <li>
-        <div className="timeline-start timeline-box">First Macintosh computer</div>
-        <div className="timeline-middle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className="h-5 w-5">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-              clipRule="evenodd" />
-          </svg>
+    <div className="timeline">
+      {mode != null ? (
+        <div
+          className={`badge ${
+            mode === 'transform'
+              ? 'badge-accent'
+              : mode === 'line'
+              ? 'badge-primary'
+              : mode === 'circle'
+              ? 'badge-secondary'
+              : 'badge-ghost'
+          }` 
+          }
+          style={{marginRight: '5px'}}
+        >
+          {mode === 'transform'
+            ? 'Transformar'
+            : mode === 'line'
+            ? 'Reta'
+            : mode === 'circle'
+            ? 'Círculo'
+            : ''}
         </div>
-        <hr />
-      </li>
-      <li>
-        <hr />
-        <div className="timeline-start timeline-box">iMac</div>
-        <div className="timeline-middle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className="h-5 w-5">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-              clipRule="evenodd" />
-          </svg>
+      ) : null}
+
+      {selectedAlgorithm && mode != null && mode != 'transform' ? (
+        <div
+          className={`badge badge-soft ${
+            mode === 'transform'
+              ? 'badge-accent'
+              : mode === 'line'
+              ? 'badge-primary'
+              : mode === 'circle'
+              ? 'badge-secondary'
+              : 'badge-ghost'
+          }`}
+          style={{marginRight: '5px'}}>
+          {selectedAlgorithm}
         </div>
-        <hr />
-      </li>
-      <li>
-        <hr />
-        <div className="timeline-start timeline-box">iPod</div>
-        <div className="timeline-middle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className="h-5 w-5">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-              clipRule="evenodd" />
-          </svg>
+      ) : null}
+      {selectedColor && mode != null && mode != 'transform' ? (
+        <div
+          className="badge badge-soft"
+          style={{ backgroundColor: `${selectedColor}`, color: 'white', marginRight: '5px' }}
+        >
+          {selectedColor}
         </div>
-        <hr />
-      </li>
-      <li>
-        <hr />
-        <div className="timeline-start timeline-box">iPhone</div>
-        <div className="timeline-middle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className="h-5 w-5">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-              clipRule="evenodd" />
-          </svg>
+      ) : null}
+
+      {newClicks[0] &&
+      selectedAlgorithm &&
+      mode != null &&
+      mode != 'transform' ? (
+        <div
+          className={`badge badge-soft ${
+            mode === 'transform'
+              ? 'badge-accent'
+              : mode === 'line'
+              ? 'badge-primary'
+              : mode === 'circle'
+              ? 'badge-secondary'
+              : 'badge-ghost'
+          }`}
+          style={{marginRight: '5px'}}>
+          P1
         </div>
-        <hr />
-      </li>
-      <li>
-        <hr />
-        <div className="timeline-start timeline-box">Apple Watch</div>
-        <div className="timeline-middle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className="h-5 w-5">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-              clipRule="evenodd" />
-          </svg>
+      ) : null}
+      {newClicks[1] &&
+      selectedAlgorithm &&
+      mode != null &&
+      mode != 'transform' ? (
+        <div
+          className={`badge badge-soft ${
+            mode === 'transform'
+              ? 'badge-accent'
+              : mode === 'line'
+              ? 'badge-primary'
+              : mode === 'circle'
+              ? 'badge-secondary'
+              : 'badge-ghost'
+          }`}
+          style={{marginRight: '5px'}}>
+          P2
         </div>
-      </li>
-    </ul>
+      ) : null}
+
+      {newClicks[0] && newClicks[1] && mode != 'transform' ? (
+        <div
+          className={`badge badge-soft ${
+            mode === 'transform'
+              ? 'badge-accent'
+              : mode === 'line'
+              ? 'badge-primary'
+              : mode === 'circle'
+              ? 'badge-secondary'
+              : 'badge-ghost'
+          }`}
+          style={{marginRight: '5px'}}>
+          Desenhado
+        </div>
+      ) : null}
+      {mode === 'transform' && transformType != null ? (
+        <div
+          className={`badge badge-soft badge-accent`}
+          style={{marginRight: '5px'}}>
+          {transformType === 'translate' ? "Transladar" : transformType === 'scale' ? "Escalar" : transformType === 'rotate' ? "Rotacionar" : transformType === 'reflect' ? "Refletir" : ""}
+        </div>
+      ): null}
+    </div>
   );
 };
 
