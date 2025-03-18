@@ -10,6 +10,7 @@ import { Shape, Line, Circle } from '../utils/Shapes';
 interface CanvasProps {
   mode: string | null;
   showGrid: boolean;
+  setShowGrid: Dispatch<SetStateAction<boolean>>;
   gridThickness: number;
   pixelSize: number;
   canvasSize: { width: number; height: number };
@@ -43,6 +44,7 @@ export const colorPixel = (
 const Canvas: React.FC<CanvasProps> = ({
   mode,
   showGrid,
+  setShowGrid,
   gridThickness,
   pixelSize,
   canvasSize,
@@ -157,7 +159,7 @@ const Canvas: React.FC<CanvasProps> = ({
 
   const getClickedShape = (x: number, y: number): Shape | undefined => {
     console.log('🔍 Buscando forma no ponto:', x, y);
-  
+
     // Passo 1: Filtrar formas cujo bounding box contém o ponto
     const possibleShapes = drawnShapes.filter((shape) => {
       if (shape instanceof Line) {
@@ -178,13 +180,13 @@ const Canvas: React.FC<CanvasProps> = ({
       }
       return false;
     });
-  
+
     console.log(`🎯 ${possibleShapes.length} formas possíveis`);
-  
+
     // Passo 2: Refinar com a distância real
     let closestShape: Shape | undefined = undefined;
     let minDistance = Infinity;
-  
+
     possibleShapes.forEach((shape) => {
       if (shape instanceof Line) {
         const { start, end } = shape;
@@ -211,11 +213,19 @@ const Canvas: React.FC<CanvasProps> = ({
           if (dot < 0 || dot > lenSq) return Infinity;
           return distance;
         };
-  
+
         const dist = distanceToLine(x, y, start.x, start.y, end.x, end.y);
         console.log(`📏 Distância até linha ${shape}: ${dist}`);
-  
-        if (dist < pixelSize *2 && dist < minDistance) {
+
+        //ajuda para selecionar
+        let folgaSelection;
+        if (pixelSize >= 10) {
+          folgaSelection = 2;
+        } else {
+          folgaSelection = 10;
+        }
+
+        if (dist < pixelSize * folgaSelection && dist < minDistance) {
           minDistance = dist;
           closestShape = shape;
         }
@@ -228,24 +238,38 @@ const Canvas: React.FC<CanvasProps> = ({
         const distanceFromCenter = Math.sqrt(dx * dx + dy * dy);
         // Diferença entre a distância do clique e o raio
         const distanceToCircumference = Math.abs(distanceFromCenter - radius);
-        console.log(`📏 Distância até círculo ${shape}: ${distanceToCircumference}`);
-  
-        if (distanceToCircumference < pixelSize && distanceToCircumference < minDistance) {
+        console.log(
+          `📏 Distância até círculo ${shape}: ${distanceToCircumference}`,
+        );
+
+        if (
+          distanceToCircumference < pixelSize &&
+          distanceToCircumference < minDistance
+        ) {
           minDistance = distanceToCircumference;
           closestShape = shape;
         }
       }
     });
-  
+
     console.log('✅ Forma mais próxima encontrada:', closestShape);
     return closestShape;
   };
-  
 
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
+
     const x = Math.floor((event.clientX - rect.left) / pixelSize);
+    if (mode != 'transform' && mode) {
+      colorPixel(
+        canvasRef.current?.getContext('2d') as CanvasRenderingContext2D,
+        x,
+        Math.floor((event.clientY - rect.top) / pixelSize),
+        pixelSize,
+        'red',
+      );
+    }
     const y = Math.floor((event.clientY - rect.top) / pixelSize);
 
     if (mode != 'transform') {
@@ -255,6 +279,15 @@ const Canvas: React.FC<CanvasProps> = ({
         setNewClicks(newClicks);
         if (newClicks.length === 2) {
           console.log('Ponto 1:', newClicks[0], 'Ponto 2:', newClicks[1]);
+
+          colorPixel(
+            canvasRef.current?.getContext('2d') as CanvasRenderingContext2D,
+            newClicks[0].x,
+            newClicks[0].y,
+            pixelSize,
+            'white',
+          );
+          setMousePos({ x: -1, y: -1 });
 
           if (mode === 'line') {
             //console.log("selectedAlgorithm: ", selectedAlgorithm);
@@ -289,9 +322,32 @@ const Canvas: React.FC<CanvasProps> = ({
               //console.log('🎨 Adicionando nova linha:', drawnShapes);
               return [...prevShapes, newLine];
             });
-            
           }
           if (mode === 'circle') {
+            // Desenhar um stroke no quadrado no newClicks[0] e preencher ele de branco
+            if (showGrid) {
+              const ctx = canvasRef.current?.getContext(
+                '2d',
+              ) as CanvasRenderingContext2D;
+
+              ctx.fillStyle = 'white';
+              ctx.fillRect(
+                newClicks[0].x * pixelSize,
+                newClicks[0].y * pixelSize,
+                pixelSize,
+                pixelSize,
+              );
+
+              ctx.strokeStyle = 'lighgray';
+              ctx.lineWidth = gridThickness;
+              ctx.strokeRect(
+                newClicks[0].x * pixelSize,
+                newClicks[0].y * pixelSize,
+                pixelSize,
+                pixelSize,
+              );
+            }
+
             setSelectedShape(null);
 
             const newCircle = new Circle(

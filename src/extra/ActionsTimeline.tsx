@@ -115,7 +115,7 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
         </div>
       ) : null}
 
-      {newClicks[0] && newClicks[1] && mode != 'transform' ? (
+      {newClicks[0] && newClicks[1] && mode != 'transform' && mode ? (
         <div
           className={`badge badge-soft ${
             mode === 'transform'

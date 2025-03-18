@@ -197,7 +197,7 @@ const Controls: React.FC<ControlsProps> = ({
             <li>
               <a
                 style={{
-                  backgroundColor: pixelSize === 1 ? '#e0e0e0' : '#f5f5f5',
+                  backgroundColor: pixelSize === 1 ? '#e0e0e0' : '',
                 }}
                 onClickCapture={() => setPixelSize(1)}
               >

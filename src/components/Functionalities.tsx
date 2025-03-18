@@ -132,8 +132,8 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
         <button
           className={`btn ${
             mode === 'transform'
-              ? 'btn-soft btn-accent'
-              : 'btn-gray hover:btn-accent'
+              ? 'btn-accent'
+              : 'btn-soft btn-accent hover:btn-accent'
           } `}
           onClick={() => {
             setMode('transform');
@@ -428,8 +428,8 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
           role="button"
           className={`btn m-1 ${
             mode === 'line'
-              ? 'btn-soft btn-primary'
-              : 'btn-gray hover:btn-primary'
+              ? 'btn btn-primary'
+              : 'btn-soft btn-primary hover:btn-primary'
           } `}
           onClick={() => {
             setMode('line');
@@ -478,8 +478,8 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
       <button
         className={`btn ${
           mode === 'circle'
-            ? 'btn-soft btn-secondary'
-            : 'btn-gray hover:btn-secondary'
+            ? 'btn-secondary'
+            : 'btn-soft btn-secondary hover:btn-secondary'
         } `}
         onClick={() => {
           setMode('circle');

@@ -69,6 +69,7 @@ function App() {
       />
       {highlight && (<MouseHighlight pixelSize={pixelSize} canvasSize={canvasSize} mousePos={mousePos} />)}
       <Canvas
+        setShowGrid={setShowGrid}
         showGrid={showGrid}
         gridThickness={gridThickness}
         pixelSize={pixelSize}
