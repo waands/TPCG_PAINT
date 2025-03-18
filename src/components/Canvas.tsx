@@ -25,6 +25,7 @@ interface CanvasProps {
   setReRender: Dispatch<SetStateAction<boolean>>;
   newClicks: { x: number; y: number }[];
   setNewClicks: Dispatch<SetStateAction<{ x: number; y: number }[]>>;
+  setClickedHighlight: Dispatch<SetStateAction<{ x: number; y: number } | undefined>>;
   //setDrawn: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -59,6 +60,7 @@ const Canvas: React.FC<CanvasProps> = ({
   setReRender,
   newClicks,
   setNewClicks,
+  setClickedHighlight,
   //setDrawn,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -82,27 +84,6 @@ const Canvas: React.FC<CanvasProps> = ({
     setMousePos({ x, y }); // Atualiza a posição do mouse no estado
   };
 
-  const drawGrid = (
-    ctx: CanvasRenderingContext2D,
-    width: number,
-    height: number,
-  ) => {
-    if (!showGrid) return;
-    ctx.strokeStyle = 'lightgray';
-    ctx.lineWidth = gridThickness;
-    for (let x = 0; x <= width; x += pixelSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    for (let y = 0; y <= height; y += pixelSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-    }
-  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -111,7 +92,6 @@ const Canvas: React.FC<CanvasProps> = ({
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawGrid(ctx, canvas.width, canvas.height);
 
     drawnShapes.forEach((shape) => shape.draw(ctx, pixelSize));
 
@@ -119,7 +99,7 @@ const Canvas: React.FC<CanvasProps> = ({
     canvas.addEventListener('mousemove', highlightMousePosition);
     return () =>
       canvas.removeEventListener('mousemove', highlightMousePosition);
-  }, [canvasSize, showGrid, gridThickness, pixelSize, reRender]);
+  }, [canvasSize, gridThickness, pixelSize, reRender]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -221,8 +201,10 @@ const Canvas: React.FC<CanvasProps> = ({
         let folgaSelection;
         if (pixelSize >= 10) {
           folgaSelection = 2;
+        } else if (pixelSize >= 5) {
+          folgaSelection = 5;
         } else {
-          folgaSelection = 10;
+          folgaSelection = 30;
         }
 
         if (dist < pixelSize * folgaSelection && dist < minDistance) {
@@ -260,17 +242,12 @@ const Canvas: React.FC<CanvasProps> = ({
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    const x = Math.floor((event.clientX - rect.left) / pixelSize);
-    if (mode != 'transform' && mode) {
-      colorPixel(
-        canvasRef.current?.getContext('2d') as CanvasRenderingContext2D,
-        x,
-        Math.floor((event.clientY - rect.top) / pixelSize),
-        pixelSize,
-        'red',
-      );
-    }
+    const x = Math.floor((event.clientX - rect.left) / pixelSize);  
     const y = Math.floor((event.clientY - rect.top) / pixelSize);
+
+    if (mode != 'transform' && mode) {
+      setClickedHighlight({ x, y });
+    }
 
     if (mode != 'transform') {
       setClicks((prev) => {
@@ -280,13 +257,7 @@ const Canvas: React.FC<CanvasProps> = ({
         if (newClicks.length === 2) {
           console.log('Ponto 1:', newClicks[0], 'Ponto 2:', newClicks[1]);
 
-          colorPixel(
-            canvasRef.current?.getContext('2d') as CanvasRenderingContext2D,
-            newClicks[0].x,
-            newClicks[0].y,
-            pixelSize,
-            'white',
-          );
+          setClickedHighlight(undefined);
           setMousePos({ x: -1, y: -1 });
 
           if (mode === 'line') {
@@ -324,30 +295,6 @@ const Canvas: React.FC<CanvasProps> = ({
             });
           }
           if (mode === 'circle') {
-            // Desenhar um stroke no quadrado no newClicks[0] e preencher ele de branco
-            if (showGrid) {
-              const ctx = canvasRef.current?.getContext(
-                '2d',
-              ) as CanvasRenderingContext2D;
-
-              ctx.fillStyle = 'white';
-              ctx.fillRect(
-                newClicks[0].x * pixelSize,
-                newClicks[0].y * pixelSize,
-                pixelSize,
-                pixelSize,
-              );
-
-              ctx.strokeStyle = 'lighgray';
-              ctx.lineWidth = gridThickness;
-              ctx.strokeRect(
-                newClicks[0].x * pixelSize,
-                newClicks[0].y * pixelSize,
-                pixelSize,
-                pixelSize,
-              );
-            }
-
             setSelectedShape(null);
 
             const newCircle = new Circle(

@@ -5,6 +5,7 @@ import Functionalities from './components/Functionalities';
 import Canvas from './components/Canvas';
 import { Shape } from './utils/Shapes';
 import {ActionsTimeline} from './extra/ActionsTimeline';
+import GridCanvas from './extra/GridCanvas';
 
 function App() {
   const [showGrid, setShowGrid] = useState(true);
@@ -12,7 +13,7 @@ function App() {
   const [pixelSize, setPixelSize] = useState(10);
   const [canvasSize, setCanvasSize] = useState({
     width: Math.floor((window.innerWidth - 200) / pixelSize) * pixelSize,
-    height: Math.floor((window.innerHeight - 362) / pixelSize) * pixelSize,
+    height: Math.floor((window.innerHeight - 290) / pixelSize) * pixelSize,
   });
   const [mode, setMode] = useState<string | null>(null);
   const [drawnShapes, setDrawnShapes] = useState<Shape[]>([]);
@@ -31,10 +32,13 @@ function App() {
 
   const [transformType, setTransformType] = useState<string | null>(null);
 
+  const [clickedHighlight, setClickedHighlight] = useState<{x: number; y: number}>();
+
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
-      <h1>Editor Gráfico</h1>
+
       <p>Wanderson Teixeira dos Reis Junior</p>
+
       <div className="badge badge-soft badge-neutral"
         style={{ position: 'absolute', top: '10px', right: '10px' }}
       >x: {mousePos.x} | y:{mousePos.y}</div>
@@ -67,6 +71,15 @@ function App() {
         setHighlight={setHighlight}
         highlight={highlight}
       />
+      <div style={{ position: 'relative' }}>
+      <GridCanvas
+        pixelSize={pixelSize}
+        canvasSize={canvasSize}
+        gridThickness={gridThickness}
+        showGrid={showGrid}
+        clickedHighlight={clickedHighlight}
+      />
+
       {highlight && (<MouseHighlight pixelSize={pixelSize} canvasSize={canvasSize} mousePos={mousePos} />)}
       <Canvas
         setShowGrid={setShowGrid}
@@ -86,7 +99,9 @@ function App() {
         reRender={reRender}
         newClicks={newClicks}
         setNewClicks={setNewClicks}
+        setClickedHighlight={setClickedHighlight}
       />
+      </div>
       <Functionalities
         mode={mode}
         setMode={setMode}
