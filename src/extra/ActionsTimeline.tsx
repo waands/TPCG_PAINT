@@ -5,7 +5,7 @@ interface ActionsTimelineProps {
   drawnShapes: Shape[];
   selectedShape: React.Dispatch<React.SetStateAction<Shape | null>>;
   mode: string | null;
-  selectedAlgorithm: 'DDA' | 'Bresenham';
+  selectedAlgorithmLine: 'DDA' | 'Bresenham';
   selectedColor: string;
   newClicks: { x: number; y: number }[];
   transformType: string | null;
@@ -16,7 +16,7 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
   drawnShapes,
   selectedShape,
   mode,
-  selectedAlgorithm,
+  selectedAlgorithmLine,
   selectedColor,
   newClicks,
   transformType,
@@ -47,7 +47,7 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
         </div>
       ) : null}
 
-      {selectedAlgorithm && mode != null && mode != 'transform' ? (
+      {selectedAlgorithmLine && mode != null && mode != 'transform' ? (
         <div
           className={`badge badge-soft ${
             mode === 'transform'
@@ -60,7 +60,7 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
           }`}
           style={{ marginRight: '5px' }}
         >
-          {selectedAlgorithm}
+          {selectedAlgorithmLine}
         </div>
       ) : null}
       {selectedColor && mode != null && mode != 'transform' ? (
@@ -77,7 +77,7 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
       ) : null}
 
       {newClicks[0] &&
-      selectedAlgorithm &&
+      selectedAlgorithmLine &&
       mode != null &&
       mode != 'transform' ? (
         <div
@@ -96,7 +96,7 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
         </div>
       ) : null}
       {newClicks[1] &&
-      selectedAlgorithm &&
+      selectedAlgorithmLine &&
       mode != null &&
       mode != 'transform' ? (
         <div

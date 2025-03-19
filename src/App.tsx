@@ -6,6 +6,7 @@ import Canvas from './components/Canvas';
 import { Shape } from './utils/Shapes';
 import {ActionsTimeline} from './extra/ActionsTimeline';
 import GridCanvas from './extra/GridCanvas';
+import {Clipper } from './utils/Clipping';
 
 function App() {
   const [showGrid, setShowGrid] = useState(true);
@@ -17,9 +18,14 @@ function App() {
   });
   const [mode, setMode] = useState<string | null>(null);
   const [drawnShapes, setDrawnShapes] = useState<Shape[]>([]);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState<
+  const [clippedShapes, setClippedShapes] = useState<Shape[]>([]);
+  const [drawnClipper, setDrawnClipper] = useState<Clipper[]>([]);
+  const [selectedAlgorithmLine, setSelectedAlgorithmLine] = useState<
     'DDA' | 'Bresenham'
   >('DDA');
+  const [selectedAlgorithmClipping, setselectedAlgorithmClipping] = useState<
+    'CoSu' | 'LiBa'
+  >('CoSu');
   const [selectedColor, setSelectedColor] = useState<string>('#000');
   const [selectedShape, setSelectedShape] = useState<Shape | null>(null);
 
@@ -48,7 +54,7 @@ function App() {
           drawnShapes={drawnShapes}
           selectedShape={setSelectedShape}
           mode={mode}
-          selectedAlgorithm={selectedAlgorithm}
+          selectedAlgorithmLine={selectedAlgorithmLine}
           selectedColor={selectedColor}
           newClicks={newClicks}
           transformType={transformType}
@@ -90,7 +96,7 @@ function App() {
         canvasSize={canvasSize}
         drawnShapes={drawnShapes}
         setDrawnShapes={setDrawnShapes}
-        selectedAlgorithm={selectedAlgorithm}
+        selectedAlgorithmLine={selectedAlgorithmLine}
         selectedColor={selectedColor}
         setSelectedShape={setSelectedShape}
         selectedShape={selectedShape}
@@ -100,6 +106,11 @@ function App() {
         newClicks={newClicks}
         setNewClicks={setNewClicks}
         setClickedHighlight={setClickedHighlight}
+        setDrawnClipper={setDrawnClipper}
+        drawnClipper={drawnClipper}
+        selectedAlgorithmClipping={selectedAlgorithmClipping}
+        setClippedShapes={setClippedShapes}
+        clippedShapes={clippedShapes}
       />
       </div>
       <Functionalities
@@ -109,8 +120,8 @@ function App() {
         drawnShapes={drawnShapes}
         setSelectedColor={setSelectedColor}
         selectedColor={selectedColor}
-        setSeletedAlgorithm={setSelectedAlgorithm}
-        selectedAlgorithm={selectedAlgorithm}
+        setSelectedAlgorithmLine={setSelectedAlgorithmLine}
+        selectedAlgorithmLine={selectedAlgorithmLine}
         selectedShape={selectedShape}
         setSelectedShape={setSelectedShape}
         setReRender={setReRender}
@@ -118,6 +129,11 @@ function App() {
         setNewClicks={setNewClicks}
         setTransformType={setTransformType}
         transformType={transformType}
+        setSelectedAlgorithmClipping={setselectedAlgorithmClipping}
+        selectedAlgorithmClipping={selectedAlgorithmClipping}
+        setDrawnClipper={setDrawnClipper}
+        setClippedShapes={setClippedShapes}
+        clippedShapes={clippedShapes}
       />
     </div>
   );

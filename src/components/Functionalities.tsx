@@ -3,14 +3,15 @@ import { Dispatch, SetStateAction } from 'react';
 import { Shape } from '../utils/Shapes';
 import ColorPicker from './ColorPicker';
 import { useState, useRef } from 'react';
+import { Clipper } from '../utils/Clipping';
 
 interface FunctionalitiesProps {
   setMode: (mode: string | null) => void;
   setDrawnShapes: Dispatch<SetStateAction<Shape[]>>;
   drawnShapes: Shape[];
   mode: string | null;
-  setSeletedAlgorithm: (algorithm: 'DDA' | 'Bresenham') => void;
-  selectedAlgorithm: 'DDA' | 'Bresenham';
+  setSelectedAlgorithmLine: (algorithm: 'DDA' | 'Bresenham') => void;
+  selectedAlgorithmLine: 'DDA' | 'Bresenham';
   setSelectedColor: (color: string) => void;
   selectedColor: string;
   selectedShape: Shape | null;
@@ -20,6 +21,11 @@ interface FunctionalitiesProps {
   setNewClicks: Dispatch<SetStateAction<{ x: number; y: number }[]>>;
   setTransformType: Dispatch<SetStateAction<string | null>>;
   transformType: string | null;
+  setSelectedAlgorithmClipping: (algorithm: 'CoSu' | 'LiBa') => void;
+  selectedAlgorithmClipping: 'CoSu' | 'LiBa';
+  setDrawnClipper: Dispatch<SetStateAction<Clipper[]>>;
+  setClippedShapes: Dispatch<SetStateAction<Shape[]>>;
+  clippedShapes: Shape[];
 }
 
 const Functionalities: React.FC<FunctionalitiesProps> = ({
@@ -27,8 +33,8 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
   setDrawnShapes,
   drawnShapes,
   mode,
-  setSeletedAlgorithm,
-  selectedAlgorithm,
+  setSelectedAlgorithmLine,
+  selectedAlgorithmLine,
   setSelectedColor,
   selectedColor,
   selectedShape,
@@ -38,6 +44,11 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
   setNewClicks,
   setTransformType,
   transformType,
+  setSelectedAlgorithmClipping,
+  selectedAlgorithmClipping,
+  setDrawnClipper,
+  setClippedShapes,
+  clippedShapes,
 }) => {
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const [transformValue, setTransformValue] = useState<number>(1);
@@ -434,7 +445,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
           onClick={() => {
             setMode('line');
             selectedShape?.deselect();
-            
+
             //setSelectedShape(null);
           }}
         >
@@ -447,7 +458,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
           <li
             onClick={() => {
               setMode('line');
-              setSeletedAlgorithm('DDA');
+              setSelectedAlgorithmLine('DDA');
             }}
           >
             <a className="text-primary">
@@ -455,19 +466,19 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
                 type="radio"
                 name="radio-4"
                 className="radio radio-primary checked:bg-primary-content"
-                checked={selectedAlgorithm === 'DDA'}
+                checked={selectedAlgorithmLine === 'DDA'}
                 readOnly
               />
               {'DDA'}
             </a>
           </li>
-          <li onClick={() => setSeletedAlgorithm('Bresenham')}>
+          <li onClick={() => setSelectedAlgorithmLine('Bresenham')}>
             <a className="text-primary">
               <input
                 type="radio"
                 name="radio-4"
                 className="radio radio-primary checked:bg-primary-content"
-                checked={selectedAlgorithm === 'Bresenham'}
+                checked={selectedAlgorithmLine === 'Bresenham'}
                 readOnly
               />
               {'Bresenham'}
@@ -484,7 +495,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
         onClick={() => {
           setMode('circle');
           setNewClicks([]);
-          setSeletedAlgorithm('Bresenham');
+          setSelectedAlgorithmLine('Bresenham');
           if (selectedShape) {
             selectedShape.deselect();
             setDrawnShapes((prevShapes) => [...prevShapes]); // Força a atualização
@@ -494,6 +505,139 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
       >
         Círculo
       </button>
+      {clippedShapes.length > 0 ? (
+        <div className="indicator">
+          <span
+            className="indicator-item badge badge-secondary cursor-pointer hover:bg-red-500"
+            onClick={(e) => {
+              e.stopPropagation();
+              setClippedShapes([]);
+              setDrawnClipper([]);
+            }}
+          >
+            x
+          </span>
+          <div className="dropdown dropdown-center">
+            <button
+              className={`btn ${
+                mode === 'clipping'
+                  ? 'btn-success'
+                  : 'btn-soft btn-success hover:btn-success'
+              }`}
+              onClick={() => {
+                setMode('clipping');
+                
+              }}
+            >
+              Recortar
+            </button>
+            {
+              <ul
+                tabIndex={2}
+                className="dropdown-content menu bg-success-content rounded-box z-1 w-52 p-2 shadow-sm"
+                style={{ backgroundColor: '#94EFB9' }}
+              >
+                <li
+                  onClick={() => {
+                    setMode('clipping');
+                    setSelectedAlgorithmClipping('CoSu');
+                  }}
+                >
+                  <a className="text-success" style={{ color: '#097B3F' }}>
+                    <input
+                      type="radio"
+                      name="radio-5"
+                      className="radio radio-success checked:bg-success-content"
+                      style={{ backgroundColor: '#94EFB9', color: '#097B3F' }}
+                      checked={selectedAlgorithmClipping === 'CoSu'}
+                      readOnly
+                    />
+                    {'Cohen-Sutherland'}
+                  </a>
+                </li>
+                <li
+                  onClick={() => {
+                    setMode('clipping');
+                    setSelectedAlgorithmClipping('LiBa');
+                  }}
+                >
+                  <a className="text-success" style={{ color: '#097B3F' }}>
+                    <input
+                      type="radio"
+                      name="radio-5"
+                      className="radio radio-success checked:bg-success-content"
+                      style={{ backgroundColor: '#94EFB9', color: '#097B3F' }}
+                      checked={selectedAlgorithmClipping === 'LiBa'}
+                      readOnly
+                    />
+                    {'Liang-Barsky'}
+                  </a>
+                </li>
+              </ul>
+            }
+          </div>
+        </div>
+      ) : (
+        <div className="dropdown dropdown-center">
+          <button
+            className={`btn ${
+              mode === 'clipping'
+                ? 'btn-success'
+                : 'btn-soft btn-success hover:btn-success'
+            }`}
+            onClick={() => {
+              setMode('clipping');
+              
+            }}
+          >
+            Recortar
+          </button>
+          {
+            <ul
+              tabIndex={2}
+              className="dropdown-content menu bg-success-content rounded-box z-1 w-52 p-2 shadow-sm"
+              style={{ backgroundColor: '#94EFB9' }}
+            >
+              <li
+                onClick={() => {
+                  setMode('clipping');
+                  setSelectedAlgorithmClipping('CoSu');
+                }}
+              >
+                <a className="text-success" style={{ color: '#097B3F' }}>
+                  <input
+                    type="radio"
+                    name="radio-5"
+                    className="radio radio-success checked:bg-success-content"
+                    style={{ backgroundColor: '#94EFB9', color: '#097B3F' }}
+                    checked={selectedAlgorithmClipping === 'CoSu'}
+                    readOnly
+                  />
+                  {'Cohen-Sutherland'}
+                </a>
+              </li>
+              <li
+                onClick={() => {
+                  setMode('clipping');
+                  setSelectedAlgorithmClipping('LiBa');
+                }}
+              >
+                <a className="text-success" style={{ color: '#097B3F' }}>
+                  <input
+                    type="radio"
+                    name="radio-5"
+                    className="radio radio-success checked:bg-success-content"
+                    style={{ backgroundColor: '#94EFB9', color: '#097B3F' }}
+                    checked={selectedAlgorithmClipping === 'LiBa'}
+                    readOnly
+                  />
+                  {'Liang-Barsky'}
+                </a>
+              </li>
+            </ul>
+          }
+        </div>
+      )}
 
       <button
         className={`btn ${
@@ -526,6 +670,8 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             setDrawnShapes([]);
             setReRender(!reRender);
             setNewClicks([]);
+            setDrawnClipper([]);
+            setClippedShapes([]);
           }
         }}
       >

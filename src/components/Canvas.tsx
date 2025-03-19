@@ -6,6 +6,7 @@ import React, {
   SetStateAction,
 } from 'react';
 import { Shape, Line, Circle } from '../utils/Shapes';
+import { Clipper } from '../utils/Clipping';
 
 interface CanvasProps {
   mode: string | null;
@@ -16,7 +17,7 @@ interface CanvasProps {
   canvasSize: { width: number; height: number };
   drawnShapes: Shape[];
   setDrawnShapes: Dispatch<SetStateAction<Shape[]>>;
-  selectedAlgorithm: 'DDA' | 'Bresenham';
+  selectedAlgorithmLine: 'DDA' | 'Bresenham';
   selectedColor: string;
   setSelectedShape: Dispatch<SetStateAction<Shape | null>>;
   selectedShape: Shape | null;
@@ -25,7 +26,14 @@ interface CanvasProps {
   setReRender: Dispatch<SetStateAction<boolean>>;
   newClicks: { x: number; y: number }[];
   setNewClicks: Dispatch<SetStateAction<{ x: number; y: number }[]>>;
-  setClickedHighlight: Dispatch<SetStateAction<{ x: number; y: number } | undefined>>;
+  setClickedHighlight: Dispatch<
+    SetStateAction<{ x: number; y: number } | undefined>
+  >;
+  setDrawnClipper: Dispatch<SetStateAction<Clipper[]>>;
+  drawnClipper: Clipper[];
+  selectedAlgorithmClipping: 'CoSu' | 'LiBa';
+  setClippedShapes: Dispatch<SetStateAction<Shape[]>>;
+  clippedShapes: Shape[];
   //setDrawn: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -51,7 +59,7 @@ const Canvas: React.FC<CanvasProps> = ({
   canvasSize,
   drawnShapes,
   setDrawnShapes,
-  selectedAlgorithm,
+  selectedAlgorithmLine,
   selectedColor,
   setSelectedShape,
   selectedShape,
@@ -61,6 +69,11 @@ const Canvas: React.FC<CanvasProps> = ({
   newClicks,
   setNewClicks,
   setClickedHighlight,
+  setDrawnClipper,
+  drawnClipper,
+  selectedAlgorithmClipping,
+  setClippedShapes,
+  clippedShapes,
   //setDrawn,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -84,7 +97,6 @@ const Canvas: React.FC<CanvasProps> = ({
     setMousePos({ x, y }); // Atualiza a posição do mouse no estado
   };
 
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -93,13 +105,21 @@ const Canvas: React.FC<CanvasProps> = ({
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawnShapes.forEach((shape) => shape.draw(ctx, pixelSize));
+    if (clippedShapes.length <= 0) {
+      drawnShapes.forEach((shape) => shape.draw(ctx, pixelSize));
 
+      
+    } else {
+      clippedShapes.forEach((shape) => shape.draw(ctx, pixelSize));
+    }
+    drawnClipper.forEach((clipper) => {
+      clipper.drawRegion(ctx, pixelSize);
+    });
     // Adicionar o evento de mousemove para destacar o pixel do mouse
     canvas.addEventListener('mousemove', highlightMousePosition);
     return () =>
       canvas.removeEventListener('mousemove', highlightMousePosition);
-  }, [canvasSize, gridThickness, pixelSize, reRender]);
+  }, [canvasSize, gridThickness, pixelSize, reRender, drawnClipper]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -110,30 +130,33 @@ const Canvas: React.FC<CanvasProps> = ({
     if (mode != 'transform') {
       prevSelectedShape?.deselect();
     }
-
-    if (selectedShape) {
-      //console.log("prevSelected: ", prevSelectedShape);
-      if (mode != 'transform') {
-        prevSelectedShape?.deselect();
-      }
-      if (prevSelectedShape != null) {
+    console.log('🎨 Redesenhando canvas');
+    console.log(clippedShapes);
+    if (clippedShapes.length <= 0) {
+      if (selectedShape) {
+        //console.log("prevSelected: ", prevSelectedShape);
+        if (mode != 'transform') {
+          prevSelectedShape?.deselect();
+        }
+        if (prevSelectedShape != null) {
+          drawnShapes.map((shape) => {
+            if (shape === prevSelectedShape) {
+              shape.draw(ctx, pixelSize);
+            }
+            return shape;
+          });
+          setPrevSelectedShape(null);
+        }
         drawnShapes.map((shape) => {
-          if (shape === prevSelectedShape) {
+          if (shape === selectedShape) {
             shape.draw(ctx, pixelSize);
           }
           return shape;
         });
-        setPrevSelectedShape(null);
+      } else if (drawnShapes.length > 0) {
+        const lastShape = drawnShapes[drawnShapes.length - 1];
+        lastShape.draw(ctx, pixelSize);
       }
-      drawnShapes.map((shape) => {
-        if (shape === selectedShape) {
-          shape.draw(ctx, pixelSize);
-        }
-        return shape;
-      });
-    } else if (drawnShapes.length > 0) {
-      const lastShape = drawnShapes[drawnShapes.length - 1];
-      lastShape.draw(ctx, pixelSize);
     }
   }, [drawnShapes, selectedShape, mode]);
 
@@ -242,7 +265,7 @@ const Canvas: React.FC<CanvasProps> = ({
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    const x = Math.floor((event.clientX - rect.left) / pixelSize);  
+    const x = Math.floor((event.clientX - rect.left) / pixelSize);
     const y = Math.floor((event.clientY - rect.top) / pixelSize);
 
     if (mode != 'transform' && mode) {
@@ -256,17 +279,18 @@ const Canvas: React.FC<CanvasProps> = ({
         setNewClicks(newClicks);
         if (newClicks.length === 2) {
           console.log('Ponto 1:', newClicks[0], 'Ponto 2:', newClicks[1]);
+          console.log('🔴 Modo:', mode);
 
           setClickedHighlight(undefined);
           setMousePos({ x: -1, y: -1 });
 
           if (mode === 'line') {
-            //console.log("selectedAlgorithm: ", selectedAlgorithm);
+            //console.log("selectedAlgorithmLine: ", selectedAlgorithmLine);
             setSelectedShape(null);
             const newLine = new Line(
               newClicks[0],
               newClicks[1],
-              selectedAlgorithm,
+              selectedAlgorithmLine,
               selectedColor,
             );
 
@@ -293,8 +317,7 @@ const Canvas: React.FC<CanvasProps> = ({
               //console.log('🎨 Adicionando nova linha:', drawnShapes);
               return [...prevShapes, newLine];
             });
-          }
-          if (mode === 'circle') {
+          } else if (mode === 'circle') {
             setSelectedShape(null);
 
             const newCircle = new Circle(
@@ -326,6 +349,43 @@ const Canvas: React.FC<CanvasProps> = ({
               //setDrawn(true);
               return [...prevShapes, newCircle];
             });
+          } else if (mode === 'clipping') {
+            const newClipper = new Clipper(selectedAlgorithmClipping);
+            newClipper.setRegion(newClicks[0], newClicks[1]);
+            newClipper.drawRegion(
+              canvasRef.current?.getContext('2d')!,
+              pixelSize,
+            );
+
+            setDrawnClipper((prevClipper) => {
+              const alreadyExists = prevClipper.some(
+                (clipper) =>
+                  clipper.getRegion().xMin === newClipper.getRegion().xMin &&
+                  clipper.getRegion().yMin === newClipper.getRegion().yMin &&
+                  clipper.getRegion().xMax === newClipper.getRegion().xMax &&
+                  clipper.getRegion().yMax === newClipper.getRegion().yMax,
+              );
+              if (alreadyExists) {
+                return prevClipper;
+              }
+
+              return [...prevClipper, newClipper];
+            });
+              // Itera por todas as linhas e aplica o clipping
+              const newShapes = drawnShapes.map((shape) => {
+                if (shape.type === 'line') {
+                  const lineShape = shape as Line;
+                  const clippedLine = newClipper.clipLine(lineShape);
+                  return clippedLine; // Pode ser null se a linha estiver totalmente fora
+                }
+                // Se não for linha, mantém o shape original ou implementa outro clipping se necessário
+                return shape;
+              }).filter((shape) => shape !== null); // Remove as linhas que ficaram totalmente fora
+            
+              // Atualiza o estado com as novas formas (clippadas)
+              setClippedShapes(newShapes as any[]);
+
+              return[];
           }
 
           return [];
