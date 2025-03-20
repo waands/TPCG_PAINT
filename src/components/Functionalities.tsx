@@ -505,8 +505,78 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
       >
         Círculo
       </button>
+
+      <div
+        className="dropdown dropdown-center"
+        onClick={() => {
+          setMode('polygon');
+          if (selectedShape) {
+            selectedShape.deselect();
+            setDrawnShapes((prevShapes) => [...prevShapes]); // Força a atualização
+          }
+          setNewClicks([]);
+        }}
+      >
+        <button
+          tabIndex={4}
+          role="button"
+          className={`btn m-1 ${
+            mode === 'polygon'
+              ? 'btn btn-info'
+              : 'btn-soft btn-info hover:btn-info'
+          } `}
+          onClick={() => {
+            setMode('polygon');
+            selectedShape?.deselect();
+
+            //setSelectedShape(null);
+          }}
+        >
+          Polígono
+        </button>
+        <ul
+          tabIndex={4}
+          className="dropdown-content menu bg-info-content rounded-box z-1 w-52 p-2 shadow-sm"
+          style={{ backgroundColor: '#A6DDF9' }}
+        >
+          <li
+            onClick={() => {
+              setMode('polygon');
+              setSelectedAlgorithmLine('DDA');
+            }}
+          >
+            <a className="text-info" style={{ color: '#095896 ' }}>
+              <input
+                type="radio"
+                name="radio-6"
+                className="radio radio-info"
+                style={{ backgroundColor: '#A6DDF9', color: '#095896 ' }}
+                checked={selectedAlgorithmLine === 'DDA'}
+                readOnly
+              />
+              {'DDA'}
+            </a>
+          </li>
+          <li onClick={() => setSelectedAlgorithmLine('Bresenham')}>
+            <a className="text-info" style={{ color: '#095896 ' }}>
+              <input
+                type="radio"
+                name="radio-6"
+                className="radio radio-info checked:bg-info-content"
+                style={{ backgroundColor: '#A6DDF9', color: '#095896 ' }}
+                checked={selectedAlgorithmLine === 'Bresenham'}
+                readOnly
+              />
+              {'Bresenham'}
+            </a>
+          </li>
+        </ul>
+      </div>
+
       {clippedShapes.length > 0 ? (
+        
         <div className="indicator">
+          
           <span
             className="indicator-item badge badge-secondary cursor-pointer hover:bg-red-500"
             onClick={(e) => {
@@ -517,6 +587,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
           >
             x
           </span>
+          
           <div className="dropdown dropdown-center">
             <button
               className={`btn ${
@@ -577,6 +648,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             }
           </div>
         </div>
+        
       ) : (
         <div className="dropdown dropdown-center">
           <button

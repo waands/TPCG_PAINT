@@ -226,4 +226,74 @@ class Circle extends Shape {
   }
 }
 
-export { Shape, Line, Circle };
+class Polygon extends Shape {
+  vertices: { x: number; y: number }[];
+  lines: Line[];
+  algorithm: 'DDA' | 'Bresenham';
+  color: string;
+  isSelected: boolean;
+
+  constructor(
+    vertices: { x: number; y: number }[],
+    algorithm: 'DDA' | 'Bresenham',
+    color: string,
+  ) {
+    super('polygon');
+    this.vertices = vertices;
+    this.algorithm = algorithm;
+    this.color = color;
+    this.isSelected = false;
+    this.lines = [];
+    this.buildLines();
+  }
+
+  // Gera as linhas do polígono conectando cada vértice ao próximo e fechando o polígono
+  private buildLines() {
+    this.lines = [];
+    if (this.vertices.length < 2) return;
+    for (let i = 0; i < this.vertices.length; i++) {
+      const start = this.vertices[i];
+      const end = this.vertices[(i + 1) % this.vertices.length]; // Conecta o último com o primeiro
+      // Cria uma nova linha a partir dos vértices (usando cópias para evitar referência)
+      const line = new Line(
+        { x: start.x, y: start.y },
+        { x: end.x, y: end.y },
+        this.algorithm,
+        this.color,
+      );
+      this.lines.push(line);
+    }
+  }
+
+  // Desenha cada linha do polígono utilizando os algoritmos já implementados
+  draw(ctx: CanvasRenderingContext2D, pixelSize: number): void {
+    for (const line of this.lines) {
+      line.draw(ctx, pixelSize);
+    }
+
+    // Se estiver selecionado, desenha marcadores em cada vértice
+    if (this.isSelected) {
+      ctx.fillStyle = '#17B29E';
+      for (const v of this.vertices) {
+        ctx.beginPath();
+        ctx.fillRect(
+          Math.round(v.x) * pixelSize - pixelSize / 2,
+          Math.round(v.y) * pixelSize - pixelSize / 2,
+          pixelSize,
+          pixelSize,
+        );
+        ctx.fill();
+      }
+    }
+  }
+
+  translate(
+    tx: number,
+    ty: number,
+    sx: number,
+    sy: number,
+    theta: number,
+    eixo: number,
+  ): void {}
+}
+export { Shape, Line, Circle, Polygon };

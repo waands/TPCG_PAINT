@@ -9,6 +9,7 @@ interface ActionsTimelineProps {
   selectedColor: string;
   newClicks: { x: number; y: number }[];
   transformType: string | null;
+  selectedAlgorithmClipping: 'CoSu' | 'LiBa';
   //drawn: boolean;
 }
 
@@ -17,53 +18,69 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
   selectedShape,
   mode,
   selectedAlgorithmLine,
+  selectedAlgorithmClipping,
   selectedColor,
   newClicks,
   transformType,
   //drawn,
 }) => {
+  let theme =
+    mode === 'transform'
+      ? 'badge-accent'
+      : mode === 'line'
+      ? 'badge-primary'
+      : mode === 'circle'
+      ? 'badge-secondary'
+      : mode === 'clipping'
+      ? 'badge-success'
+      : 'badge-ghost';
+
   return (
     <div className="timeline">
       {mode != null ? (
-        <div
-          className={`badge ${
-            mode === 'transform'
-              ? 'badge-accent'
-              : mode === 'line'
-              ? 'badge-primary'
-              : mode === 'circle'
-              ? 'badge-secondary'
-              : 'badge-ghost'
-          }`}
-          style={{ marginRight: '5px' }}
-        >
+        <div className={`badge ${theme}`} style={{ marginRight: '5px' }}>
           {mode === 'transform'
             ? 'Transformar'
             : mode === 'line'
             ? 'Reta'
             : mode === 'circle'
             ? 'Círculo'
+            : mode === 'clipping'
+            ? 'Recorte'
             : ''}
         </div>
       ) : null}
 
-      {selectedAlgorithmLine && mode != null && mode != 'transform' ? (
+      {selectedAlgorithmLine &&
+      mode != null &&
+      mode != 'transform' &&
+      mode != 'clipping' ? (
         <div
-          className={`badge badge-soft ${
-            mode === 'transform'
-              ? 'badge-accent'
-              : mode === 'line'
-              ? 'badge-primary'
-              : mode === 'circle'
-              ? 'badge-secondary'
-              : 'badge-ghost'
-          }`}
+          className={`badge badge-soft ${theme}`}
           style={{ marginRight: '5px' }}
         >
-          {selectedAlgorithmLine}
+          {mode === 'line' ? selectedAlgorithmLine : ''}
         </div>
       ) : null}
-      {selectedColor && mode != null && mode != 'transform' ? (
+      {selectedAlgorithmClipping &&
+      mode != null &&
+      mode != 'transform' &&
+      mode != 'line' ? (
+        <div
+          className={`badge badge-soft ${theme}`}
+          style={{ marginRight: '5px' }}
+        >
+          {mode === 'clipping'
+            ? selectedAlgorithmClipping === 'CoSu'
+              ? 'Cohen-Sutherland'
+              : 'Liang-Barsky'
+            : ''}
+        </div>
+      ) : null}
+      {selectedColor &&
+      mode != null &&
+      mode != 'transform' &&
+      mode != 'clipping' ? (
         <div
           className="badge badge-soft"
           style={{
@@ -81,18 +98,25 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
       mode != null &&
       mode != 'transform' ? (
         <div
-          className={`badge badge-soft ${
+          className={`tooltip tooltip-bottom ${
             mode === 'transform'
-              ? 'badge-accent'
+              ? 'tooltip-accent'
               : mode === 'line'
-              ? 'badge-primary'
+              ? 'tooltip-primary'
               : mode === 'circle'
-              ? 'badge-secondary'
-              : 'badge-ghost'
+              ? 'tooltip-secondary'
+              : mode === 'clipping'
+              ? 'tooltip-success'
+              : 'tooltip-ghost'
           }`}
-          style={{ marginRight: '5px' }}
+          data-tip={`(${newClicks[0].x}, ${newClicks[0].y})`}
         >
-          P1
+          <div
+            className={`badge badge-soft ${theme}`}
+            style={{ marginRight: '5px' }}
+          >
+            P1
+          </div>
         </div>
       ) : null}
       {newClicks[1] &&
@@ -100,38 +124,37 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
       mode != null &&
       mode != 'transform' ? (
         <div
-          className={`badge badge-soft ${
+          className={`tooltip tooltip-bottom ${
             mode === 'transform'
-              ? 'badge-accent'
+              ? 'tooltip-accent'
               : mode === 'line'
-              ? 'badge-primary'
+              ? 'tooltip-primary'
               : mode === 'circle'
-              ? 'badge-secondary'
-              : 'badge-ghost'
+              ? 'tooltip-secondary'
+              : mode === 'clipping'
+              ? 'tooltip-success'
+              : 'tooltip-ghost'
           }`}
-          style={{ marginRight: '5px' }}
+          data-tip={`(${newClicks[1].x}, ${newClicks[1].y})`}
         >
-          P2
+          <div
+            className={`badge badge-soft ${theme}`}
+            style={{ marginRight: '5px' }}
+          >
+            P2
+          </div>
         </div>
       ) : null}
 
       {newClicks[0] && newClicks[1] && mode != 'transform' && mode ? (
         <div
-          className={`badge badge-soft ${
-            mode === 'transform'
-              ? 'badge-accent'
-              : mode === 'line'
-              ? 'badge-primary'
-              : mode === 'circle'
-              ? 'badge-secondary'
-              : 'badge-ghost'
-          }`}
+          className={`badge badge-soft ${theme}`}
           style={{ marginRight: '5px' }}
         >
-          Desenhado
+          {mode === 'clipping' ? 'Recortado' : 'Desenhado'}
         </div>
       ) : null}
-      {mode === 'transform' && drawnShapes.some(shape => shape.isSelected) ? (
+      {mode === 'transform' && drawnShapes.some((shape) => shape.isSelected) ? (
         <div
           className={`badge badge-soft badge-accent`}
           style={{ marginRight: '5px' }}

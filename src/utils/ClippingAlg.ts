@@ -102,8 +102,8 @@ export const CoSu = (line: Line, region: ClippingRegion): Line | null => {
   if (aceite) {
     // desenha a linha (retorna a nova linha recortada)
     return new Line(
-      { x: xA, y: yA },
-      { x: xB, y: yB },
+      { x: Math.floor(xA), y: Math.floor(yA) },
+      { x: Math.ceil(xB), y: Math.ceil(yB) },
       line.algorithm,
       line.color,
     );
@@ -112,6 +112,70 @@ export const CoSu = (line: Line, region: ClippingRegion): Line | null => {
 };
 
 export const LiBa = (line: Line, region: ClippingRegion): Line | null => {
-  // Implementação do algoritmo Liang-Barsky (a ser feito)
+  let xmin = region.xMin;
+  let ymin = region.yMin;
+  let xmax = region.xMax;
+  let ymax = region.yMax;
+
+  let x1 = line.start.x;
+  let y1 = line.start.y;
+  let x2 = line.end.x;
+  let y2 = line.end.y;
+
+  let dx = x2 - x1;
+  let dy = y2 - y1;
+  // Usamos um objeto para armazenar u1 e u2
+  let u = { u1: 0, u2: 1 };
+
+  if (cliptest(-dx, x1 - xmin, u)) {
+    if (cliptest(dx, xmax - x1, u)) {
+      if (cliptest(-dy, y1 - ymin, u)) {
+        if (cliptest(dy, ymax - y1, u)) {
+          if (u.u2 < 1) {
+            x2 = x1 + u.u2 * dx;
+            y2 = y1 + u.u2 * dy;
+          }
+          if (u.u1 > 0) {
+            x1 = x1 + u.u1 * dx;
+            y1 = y1 + u.u1 * dy;
+          }
+          return new Line(
+            { x: Math.floor(x1), y: Math.floor(y1) },
+            { x: Math.ceil(x2), y: Math.ceil(y2) },
+            line.algorithm,
+            line.color,
+          );
+        }
+      }
+    }
+  }
   return null;
 };
+
+function cliptest(
+  p: number,
+  q: number,
+  u: { u1: number; u2: number },
+): boolean {
+  let result = true;
+  let r: number;
+
+  if (p < 0) {
+    r = q / p;
+    if (r > u.u2) {
+      result = false;
+    } else if (r > u.u1) {
+      u.u1 = r;
+    }
+  } else if (p > 0) {
+    r = q / p;
+    if (r < u.u1) {
+      result = false;
+    } else if (r < u.u2) {
+      u.u2 = r;
+    }
+  } else if (q < 0) {
+    result = false;
+  }
+  return result;
+}

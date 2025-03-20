@@ -5,7 +5,7 @@ import React, {
   Dispatch,
   SetStateAction,
 } from 'react';
-import { Shape, Line, Circle } from '../utils/Shapes';
+import { Shape, Line, Circle, Polygon } from '../utils/Shapes';
 import { Clipper } from '../utils/Clipping';
 
 interface CanvasProps {
@@ -81,6 +81,9 @@ const Canvas: React.FC<CanvasProps> = ({
     null,
   );
   const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
+  const [polygonVertices, setPolygonVertices] = useState<
+    { x: number; y: number }[]
+  >([]);
 
   // Função para destacar a posição do mouse
 
@@ -107,8 +110,6 @@ const Canvas: React.FC<CanvasProps> = ({
 
     if (clippedShapes.length <= 0) {
       drawnShapes.forEach((shape) => shape.draw(ctx, pixelSize));
-
-      
     } else {
       clippedShapes.forEach((shape) => shape.draw(ctx, pixelSize));
     }
@@ -264,139 +265,180 @@ const Canvas: React.FC<CanvasProps> = ({
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-
+  
     const x = Math.floor((event.clientX - rect.left) / pixelSize);
     const y = Math.floor((event.clientY - rect.top) / pixelSize);
-
-    if (mode != 'transform' && mode) {
-      setClickedHighlight({ x, y });
+    const newPoint = { x, y };
+  
+    if (mode !== 'transform' && mode) {
+      setClickedHighlight(newPoint);
     }
-
-    if (mode != 'transform') {
-      setClicks((prev) => {
-        //setDrawn(false);
-        const newClicks = [...prev, { x, y }];
-        setNewClicks(newClicks);
-        if (newClicks.length === 2) {
-          console.log('Ponto 1:', newClicks[0], 'Ponto 2:', newClicks[1]);
-          console.log('🔴 Modo:', mode);
-
-          setClickedHighlight(undefined);
-          setMousePos({ x: -1, y: -1 });
-
-          if (mode === 'line') {
-            //console.log("selectedAlgorithmLine: ", selectedAlgorithmLine);
-            setSelectedShape(null);
-            const newLine = new Line(
-              newClicks[0],
-              newClicks[1],
-              selectedAlgorithmLine,
-              selectedColor,
-            );
-
-            setDrawnShapes((prevShapes) => {
-              // Verifica se já existe uma linha com os mesmos pontos
-              const alreadyExists = prevShapes.some(
-                (shape) =>
-                  shape instanceof Line &&
-                  ((shape.start.x === newLine.start.x &&
-                    shape.start.y === newLine.start.y &&
-                    shape.end.x === newLine.end.x &&
-                    shape.end.y === newLine.end.y) ||
-                    (shape.start.x === newLine.end.x &&
-                      shape.start.y === newLine.end.y &&
-                      shape.end.x === newLine.start.x &&
-                      shape.end.y === newLine.start.y)),
+  
+    if (mode !== 'transform') {
+      // Se o modo for POLYGON, trata separadamente
+      if (mode === 'polygon') {
+        const tolerance = 1; // ajuste conforme necessário
+  
+        setPolygonVertices((prevVertices) => {
+          // Se já há vértices, verifica se o clique fecha o polígono
+          if (prevVertices.length > 0) {
+            const first = prevVertices[0];
+            // Se houver pelo menos 3 vértices e o novo clique estiver próximo do primeiro, fecha o polígono
+            if (
+              prevVertices.length >= 3 &&
+              Math.abs(newPoint.x - first.x) <= tolerance &&
+              Math.abs(newPoint.y - first.y) <= tolerance
+            ) {
+              // Desenha a reta de fechamento (do último vértice ao primeiro)
+              const closingLine = new Line(
+                prevVertices[prevVertices.length - 1],
+                first,
+                selectedAlgorithmLine,
+                selectedColor,
               );
-
-              if (alreadyExists) {
-                //console.log('🚨 Linha duplicada detectada, não adicionando!');
-                return prevShapes; // Retorna o mesmo estado sem adicionar a duplicata
-              }
-              //setDrawn(true);
-              //console.log('🎨 Adicionando nova linha:', drawnShapes);
-              return [...prevShapes, newLine];
-            });
-          } else if (mode === 'circle') {
-            setSelectedShape(null);
-
-            const newCircle = new Circle(
-              newClicks[0],
-              //descobre a hipotenusa entre o ponto x0 e x1 e y0 e y1
-              Math.round(
-                Math.sqrt(
-                  Math.pow(newClicks[1].x - newClicks[0].x, 2) +
-                    Math.pow(newClicks[1].y - newClicks[0].y, 2),
-                ),
-              ),
-              'Bresenham',
-              selectedColor,
-            );
-
-            setDrawnShapes((prevShapes) => {
-              const alreadyExists = prevShapes.some(
-                (shape) =>
-                  shape instanceof Circle &&
-                  shape.center.x === newCircle.center.x &&
-                  shape.center.y === newCircle.center.y &&
-                  shape.radius === newCircle.radius,
+              setDrawnShapes((prevShapes) => [...prevShapes, closingLine]);
+  
+              // Cria o objeto Polygon com os vértices acumulados
+              const newPolygon = new Polygon(prevVertices, selectedAlgorithmLine, selectedColor);
+              // Se preferir, você pode optar por remover as linhas individuais e exibir apenas o polígono
+              setDrawnShapes((prevShapes) => [...prevShapes, newPolygon]);
+  
+              setClickedHighlight(undefined);
+              return []; // Limpa os vértices para iniciar um novo polígono
+            } else {
+              // Se não estiver fechando, desenha a reta do último vértice para o novo ponto
+              const lastPoint = prevVertices[prevVertices.length - 1];
+              const newLine = new Line(
+                { ...lastPoint },
+                { ...newPoint },
+                selectedAlgorithmLine,
+                selectedColor,
               );
-
-              if (alreadyExists) {
-                return prevShapes;
-              }
-
-              //setDrawn(true);
-              return [...prevShapes, newCircle];
-            });
-          } else if (mode === 'clipping') {
-            const newClipper = new Clipper(selectedAlgorithmClipping);
-            newClipper.setRegion(newClicks[0], newClicks[1]);
-            newClipper.drawRegion(
-              canvasRef.current?.getContext('2d')!,
-              pixelSize,
-            );
-
-            setDrawnClipper((prevClipper) => {
-              const alreadyExists = prevClipper.some(
-                (clipper) =>
-                  clipper.getRegion().xMin === newClipper.getRegion().xMin &&
-                  clipper.getRegion().yMin === newClipper.getRegion().yMin &&
-                  clipper.getRegion().xMax === newClipper.getRegion().xMax &&
-                  clipper.getRegion().yMax === newClipper.getRegion().yMax,
-              );
-              if (alreadyExists) {
-                return prevClipper;
-              }
-
-              return [...prevClipper, newClipper];
-            });
-              // Itera por todas as linhas e aplica o clipping
-              const newShapes = drawnShapes.map((shape) => {
-                if (shape.type === 'line') {
-                  const lineShape = shape as Line;
-                  const clippedLine = newClipper.clipLine(lineShape);
-                  return clippedLine; // Pode ser null se a linha estiver totalmente fora
-                }
-                // Se não for linha, mantém o shape original ou implementa outro clipping se necessário
-                return shape;
-              }).filter((shape) => shape !== null); // Remove as linhas que ficaram totalmente fora
-            
-              // Atualiza o estado com as novas formas (clippadas)
-              setClippedShapes(newShapes as any[]);
-
-              return[];
+              setDrawnShapes((prevShapes) => [...prevShapes, newLine]);
+              return [...prevVertices, newPoint];
+            }
+          } else {
+            // Se for o primeiro clique, apenas adiciona o vértice
+            return [newPoint];
           }
-
-          return [];
-        }
-        return newClicks;
-      });
+        });
+      } else {
+        // Lógica para os outros modos (line, circle, clipping) que dependem de dois cliques
+        setClicks((prev) => {
+          const newClicks = [...prev, newPoint];
+          setNewClicks(newClicks);
+          if (newClicks.length === 2) {
+            console.log('Ponto 1:', newClicks[0], 'Ponto 2:', newClicks[1]);
+            console.log('🔴 Modo:', mode);
+  
+            setClickedHighlight(undefined);
+            setMousePos({ x: -1, y: -1 });
+  
+            if (mode === 'line') {
+              setSelectedShape(null);
+              const newLine = new Line(
+                newClicks[0],
+                newClicks[1],
+                selectedAlgorithmLine,
+                selectedColor,
+              );
+  
+              setDrawnShapes((prevShapes) => {
+                const alreadyExists = prevShapes.some(
+                  (shape) =>
+                    shape instanceof Line &&
+                    ((shape.start.x === newLine.start.x &&
+                      shape.start.y === newLine.start.y &&
+                      shape.end.x === newLine.end.x &&
+                      shape.end.y === newLine.end.y) ||
+                      (shape.start.x === newLine.end.x &&
+                        shape.start.y === newLine.end.y &&
+                        shape.end.x === newLine.start.x &&
+                        shape.end.y === newLine.start.y)),
+                );
+                if (alreadyExists) {
+                  return prevShapes;
+                }
+                return [...prevShapes, newLine];
+              });
+            } else if (mode === 'circle') {
+              setSelectedShape(null);
+              const newCircle = new Circle(
+                newClicks[0],
+                Math.round(
+                  Math.sqrt(
+                    Math.pow(newClicks[1].x - newClicks[0].x, 2) +
+                      Math.pow(newClicks[1].y - newClicks[0].y, 2),
+                  ),
+                ),
+                'Bresenham',
+                selectedColor,
+              );
+              setDrawnShapes((prevShapes) => {
+                const alreadyExists = prevShapes.some(
+                  (shape) =>
+                    shape instanceof Circle &&
+                    shape.center.x === newCircle.center.x &&
+                    shape.center.y === newCircle.center.y &&
+                    shape.radius === newCircle.radius,
+                );
+                if (alreadyExists) {
+                  return prevShapes;
+                }
+                return [...prevShapes, newCircle];
+              });
+            } else if (mode === 'clipping') {
+              const newClipper = new Clipper(selectedAlgorithmClipping);
+              newClipper.setRegion(newClicks[0], newClicks[1]);
+              newClipper.drawRegion(
+                canvasRef.current?.getContext('2d')!,
+                pixelSize,
+              );
+  
+              setDrawnClipper((prevClipper) => {
+                const alreadyExists = prevClipper.some(
+                  (clipper) =>
+                    clipper.getRegion().xMin === newClipper.getRegion().xMin &&
+                    clipper.getRegion().yMin === newClipper.getRegion().yMin &&
+                    clipper.getRegion().xMax === newClipper.getRegion().xMax &&
+                    clipper.getRegion().yMax === newClipper.getRegion().yMax,
+                );
+                if (alreadyExists) {
+                  return prevClipper;
+                }
+  
+                return [...prevClipper, newClipper];
+              });
+              // Itera por todas as linhas e aplica o clipping
+              const newShapes = drawnShapes
+                .map((shape) => {
+                  if (shape.type === 'line') {
+                    const lineShape = shape as Line;
+                    const clippedLine = newClipper.clipLine(lineShape);
+                    return clippedLine; // Pode ser null se a linha estiver totalmente fora
+                  }
+                  // Se não for linha, mantém o shape original ou implementa outro clipping se necessário
+                  return shape;
+                })
+                .filter((shape) => shape !== null); // Remove as linhas que ficaram totalmente fora
+  
+              // Atualiza o estado com as novas formas (clippadas)
+              setClippedShapes((prevClippedShapes) => [
+                ...prevClippedShapes,
+                ...newShapes,
+              ]);
+  
+              return [];
+            }
+  
+            return []; // Limpa o array de cliques para os modos que usam dois cliques
+          }
+          return newClicks;
+        });
+      }
     } else if (mode === 'transform') {
-      // Verificar se clicou em alguma forma
+      // Lógica para o modo de transformação
       const clickedShape = getClickedShape(x, y);
-      //console.log("Clique na linhaaa: ", clickedShape);
-
       if (clickedShape) {
         setDrawnShapes((prevShapes) =>
           prevShapes.map((shape) => {
@@ -408,7 +450,6 @@ const Canvas: React.FC<CanvasProps> = ({
             return shape;
           }),
         );
-        console.log('Clique na linha: ', clickedShape);
         if (selectedShape) {
           setPrevSelectedShape(selectedShape);
         }
@@ -416,6 +457,7 @@ const Canvas: React.FC<CanvasProps> = ({
       }
     }
   };
+  
 
   // retornar o canvas com o tamanho da tela inteira
 

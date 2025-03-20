@@ -8,6 +8,7 @@ import {ActionsTimeline} from './extra/ActionsTimeline';
 import GridCanvas from './extra/GridCanvas';
 import {Clipper } from './utils/Clipping';
 
+
 function App() {
   const [showGrid, setShowGrid] = useState(true);
   const [gridThickness, setGridThickness] = useState(1);
@@ -45,6 +46,7 @@ function App() {
 
       <p>Wanderson Teixeira dos Reis Junior</p>
 
+
       <div className="badge badge-soft badge-neutral"
         style={{ position: 'absolute', top: '10px', right: '10px' }}
       >x: {mousePos.x} | y:{mousePos.y}</div>
@@ -55,6 +57,7 @@ function App() {
           selectedShape={setSelectedShape}
           mode={mode}
           selectedAlgorithmLine={selectedAlgorithmLine}
+          selectedAlgorithmClipping={selectedAlgorithmClipping}
           selectedColor={selectedColor}
           newClicks={newClicks}
           transformType={transformType}

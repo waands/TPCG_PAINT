@@ -78,7 +78,7 @@ export class Clipper {
     if (this.algorithm === 'CoSu') {
       return CoSu(line, this.region);
     } else if (this.algorithm === 'LiBa') {
-      // Retorne o recorte pela função LiBa, quando implementada
+      return LiBa(line, this.region);
     }
     return null;
   }
