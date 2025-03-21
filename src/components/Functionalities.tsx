@@ -672,7 +672,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             }`}
             onClick={() => {
               setMode('clipping');
-              setSelectedShape(null);
+              setSelectedShape(null)
             }}
           >
             Recortar
