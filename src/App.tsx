@@ -89,7 +89,6 @@ function App() {
         gridThickness={gridThickness}
         showGrid={showGrid}
         clickedHighlight={clickedHighlight}
-        setTransformRectPoints={setTransformRectPoints}
         transformRectPoints={transformRectPoints}
         transformType={transformType}
       />
@@ -117,7 +116,6 @@ function App() {
         setClippedShapes={setClippedShapes}
         clippedShapes={clippedShapes}
         setTransformRectPoints={setTransformRectPoints}
-        transformRectPoints={transformRectPoints}
       />
       </div>
       <Functionalities

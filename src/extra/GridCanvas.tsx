@@ -8,7 +8,6 @@ interface GridCanvasProps {
   showGrid: boolean;
   clickedHighlight: { x: number; y: number } | undefined;
   transformRectPoints: { x: number; y: number }[];
-  setTransformRectPoints: React.Dispatch<React.SetStateAction<{ x: number; y: number }[]>>;
   transformType: string | null;
 }
 
@@ -18,7 +17,6 @@ const GridCanvas: React.FC<GridCanvasProps> = ({
   gridThickness,
   showGrid,
   clickedHighlight,
-  setTransformRectPoints,
   transformRectPoints,
   transformType,
 }) => {

@@ -11,7 +11,6 @@ import { drawDDA, drawBresenham } from '../utils/LineAlg';
 import {
   getBoundingBox,
   intersectsRect,
-  isContainedInRect,
 } from '../utils/BoundingBox';
 
 interface CanvasProps {
@@ -38,7 +37,6 @@ interface CanvasProps {
   setClippedShapes: Dispatch<SetStateAction<Shape[]>>;
   clippedShapes: Shape[];
   setTransformRectPoints: Dispatch<SetStateAction<{ x: number; y: number }[]>>;
-  transformRectPoints: { x: number; y: number }[];
 }
 
 /**
@@ -83,7 +81,6 @@ const Canvas: React.FC<CanvasProps> = ({
   setClippedShapes,
   clippedShapes,
   setTransformRectPoints,
-  transformRectPoints,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -93,7 +90,7 @@ const Canvas: React.FC<CanvasProps> = ({
   );
 
   // Controla os cliques necessários para desenhar figuras que necessitam mais de um ponto (ex: linhas).
-  const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
+  const [, setClicks] = useState<{ x: number; y: number }[]>([]);
 
   // Armazena os vértices temporários de um polígono antes dele ser fechado.
   const [polygonVertices, setPolygonVertices] = useState<

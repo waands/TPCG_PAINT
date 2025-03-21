@@ -57,15 +57,3 @@ export function intersectsRect(
   }
   return true; // Intersectou
 }
-
-export function isContainedInRect(
-  shapeBox: { xMin: number; yMin: number; xMax: number; yMax: number },
-  selBox: { xMin: number; yMin: number; xMax: number; yMax: number },
-): boolean {
-  return (
-    shapeBox.xMin >= selBox.xMin &&
-    shapeBox.xMax <= selBox.xMax &&
-    shapeBox.yMin >= selBox.yMin &&
-    shapeBox.yMax <= selBox.yMax
-  );
-}
