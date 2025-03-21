@@ -1,4 +1,4 @@
-import { Shape, Line, Circle } from './Shapes';
+import { Shape, Line, Circle } from '../components/Shapes';
 
 export const translacao = (shape: Shape, tx: number, ty: number) => {
   if (shape instanceof Line) {

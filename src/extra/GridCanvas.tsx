@@ -7,6 +7,9 @@ interface GridCanvasProps {
   gridThickness: number;
   showGrid: boolean;
   clickedHighlight: { x: number; y: number } | undefined;
+  transformRectPoints: { x: number; y: number }[];
+  setTransformRectPoints: React.Dispatch<React.SetStateAction<{ x: number; y: number }[]>>;
+  transformType: string | null;
 }
 
 const GridCanvas: React.FC<GridCanvasProps> = ({
@@ -15,6 +18,9 @@ const GridCanvas: React.FC<GridCanvasProps> = ({
   gridThickness,
   showGrid,
   clickedHighlight,
+  setTransformRectPoints,
+  transformRectPoints,
+  transformType,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -54,7 +60,38 @@ const GridCanvas: React.FC<GridCanvasProps> = ({
         ctx.lineWidth = gridThickness; 
         ctx.strokeRect(gridX, gridY, pixelSize, pixelSize); // Desenha apenas a borda
     }
-  }, [pixelSize, canvasSize, gridThickness, showGrid, clickedHighlight]);
+
+
+    // Se estiver selecionando, e tiver dois pontos, desenhe o retângulo de seleção
+    if (transformRectPoints.length === 2) {
+      const [p1, p2] = transformRectPoints;
+      const selBox = {
+        xMin: Math.min(p1.x, p2.x),
+        yMin: Math.min(p1.y, p2.y),
+        xMax: Math.max(p1.x, p2.x),
+        yMax: Math.max(p1.y, p2.y),
+      };
+
+      ctx.strokeStyle = 'blue';
+      //ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 1;
+      ctx.strokeRect(
+        selBox.xMin * pixelSize,
+        selBox.yMin * pixelSize,
+        (selBox.xMax - selBox.xMin) * pixelSize,
+        (selBox.yMax - selBox.yMin) * pixelSize,
+      );
+
+      // Se quiser preencher com uma cor semi-transparente:
+      ctx.fillStyle = 'rgba(0, 0, 255, 0.2)';
+      ctx.fillRect(
+        selBox.xMin * pixelSize,
+        selBox.yMin * pixelSize,
+        (selBox.xMax - selBox.xMin) * pixelSize,
+        (selBox.yMax - selBox.yMin) * pixelSize,
+      );
+    }
+  }, [pixelSize, canvasSize, gridThickness, showGrid, clickedHighlight, transformRectPoints, transformType]);
 
   return (
     <canvas

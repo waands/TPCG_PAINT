@@ -25,6 +25,7 @@ Paint do Wands é um aplicativo web interativo desenvolvido para a disciplina de
 - **React:** Biblioteca para construção da interface do usuário.
 - **TypeScript:** Superset do JavaScript que adiciona tipagem estática.
 - **HTML5 Canvas:** Elemento HTML para renderização de gráficos 2D.
+- **DaisyUI:** Biblioteca gráfica para construção da interface e componentes.
 
 ## Como Utilizar
 

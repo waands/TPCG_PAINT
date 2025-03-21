@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shape } from '../utils/Shapes';
+import { Shape } from '../components/Shapes';
 
 interface ActionsTimelineProps {
   drawnShapes: Shape[];

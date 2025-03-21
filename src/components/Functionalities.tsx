@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dispatch, SetStateAction } from 'react';
-import { Shape } from '../utils/Shapes';
+import { Shape } from './Shapes';
 import ColorPicker from './ColorPicker';
 import { useState } from 'react';
 import { Clipper } from '../utils/Clipping';

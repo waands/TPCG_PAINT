@@ -1,6 +1,6 @@
-import { drawDDA, drawBresenham } from './LineAlg';
-import { compositeTransform } from './TransformGeo2D';
-import { drawBresenhamCircle } from './CircleAlg';
+import { drawDDA, drawBresenham } from '../utils/LineAlg';
+import { compositeTransform } from '../utils/TransformGeo2D';
+import { drawBresenhamCircle } from '../utils/CircleAlg';
 //import { drawBresenham } from "../algorithms/Bresenham";
 
 abstract class Shape {

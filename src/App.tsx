@@ -3,7 +3,7 @@ import MouseHighlight from './extra/MouseHighlight';
 import Controls from './components/Controls';
 import Functionalities from './components/Functionalities';
 import Canvas from './components/Canvas';
-import { Shape } from './utils/Shapes';
+import { Shape } from './components/Shapes';
 import {ActionsTimeline} from './extra/ActionsTimeline';
 import GridCanvas from './extra/GridCanvas';
 import {Clipper } from './utils/Clipping';
@@ -40,6 +40,9 @@ function App() {
   const [transformType, setTransformType] = useState<string | null>(null);
 
   const [clickedHighlight, setClickedHighlight] = useState<{x: number; y: number}>();
+
+  // Armazena cliques para construir retangulo de seleção
+  const [transformRectPoints, setTransformRectPoints] = useState<{ x: number; y: number }[]>([]);
 
   return (
     <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -86,6 +89,9 @@ function App() {
         gridThickness={gridThickness}
         showGrid={showGrid}
         clickedHighlight={clickedHighlight}
+        setTransformRectPoints={setTransformRectPoints}
+        transformRectPoints={transformRectPoints}
+        transformType={transformType}
       />
 
       {highlight && (<MouseHighlight pixelSize={pixelSize} canvasSize={canvasSize} mousePos={mousePos} />)}
@@ -110,6 +116,8 @@ function App() {
         selectedAlgorithmClipping={selectedAlgorithmClipping}
         setClippedShapes={setClippedShapes}
         clippedShapes={clippedShapes}
+        setTransformRectPoints={setTransformRectPoints}
+        transformRectPoints={transformRectPoints}
       />
       </div>
       <Functionalities

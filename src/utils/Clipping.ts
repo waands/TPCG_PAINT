@@ -1,7 +1,7 @@
 export type ClippingAlgorithm = 'CoSu' | 'LiBa';
 import { colorPixel } from '../components/Canvas';
 import { CoSu, LiBa } from './ClippingAlg';
-import { Line } from './Shapes';
+import { Line } from '../components/Shapes';
 
 export interface ClippingRegion {
   xMin: number;

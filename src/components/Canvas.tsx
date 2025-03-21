@@ -5,9 +5,14 @@ import React, {
   Dispatch,
   SetStateAction,
 } from 'react';
-import { Shape, Line, Circle, Polygon } from '../utils/Shapes';
+import { Shape, Line, Circle, Polygon } from './Shapes';
 import { Clipper } from '../utils/Clipping';
 import { drawDDA, drawBresenham } from '../utils/LineAlg';
+import {
+  getBoundingBox,
+  intersectsRect,
+  isContainedInRect,
+} from '../utils/BoundingBox';
 
 interface CanvasProps {
   mode: string | null;
@@ -32,11 +37,13 @@ interface CanvasProps {
   selectedAlgorithmClipping: 'CoSu' | 'LiBa';
   setClippedShapes: Dispatch<SetStateAction<Shape[]>>;
   clippedShapes: Shape[];
+  setTransformRectPoints: Dispatch<SetStateAction<{ x: number; y: number }[]>>;
+  transformRectPoints: { x: number; y: number }[];
 }
 
 /**
  * Preenche um pixel específico no canvas com a cor selecionada.
- * 
+ *
  * @param ctx - Contexto 2D do Canvas.
  * @param x - Posição X do pixel (em unidades de grid).
  * @param y - Posição Y do pixel (em unidades de grid).
@@ -75,14 +82,18 @@ const Canvas: React.FC<CanvasProps> = ({
   selectedAlgorithmClipping,
   setClippedShapes,
   clippedShapes,
+  setTransformRectPoints,
+  transformRectPoints,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Armazena a forma selecionada anteriormente, para poder desselar caso mudemos de modo.
-  const [prevSelectedShape, setPrevSelectedShape] = useState<Shape | null>(null);
+  const [prevSelectedShape, setPrevSelectedShape] = useState<Shape | null>(
+    null,
+  );
 
   // Controla os cliques necessários para desenhar figuras que necessitam mais de um ponto (ex: linhas).
-  const [, setClicks] = useState<{ x: number; y: number }[]>([]);
+  const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
 
   // Armazena os vértices temporários de um polígono antes dele ser fechado.
   const [polygonVertices, setPolygonVertices] = useState<
@@ -174,6 +185,7 @@ const Canvas: React.FC<CanvasProps> = ({
     // Se não estamos mais no modo de transformação, desselar a forma anterior, se existir.
     if (mode !== 'transform') {
       prevSelectedShape?.deselect();
+      setTransformRectPoints([]);
     }
 
     // Se há uma forma selecionada, desenhamos novamente para ressaltar.
@@ -202,101 +214,97 @@ const Canvas: React.FC<CanvasProps> = ({
       }
     }
   }, [drawnShapes, selectedShape, mode, clippedShapes, prevSelectedShape]);
+  /**
+   * Calcula a área de interseção entre dois retângulos.
+   */
+  function intersectionArea(
+    boxA: { xMin: number; yMin: number; xMax: number; yMax: number },
+    boxB: { xMin: number; yMin: number; xMax: number; yMax: number },
+  ): number {
+    const xOverlap = Math.max(
+      0,
+      Math.min(boxA.xMax, boxB.xMax) - Math.max(boxA.xMin, boxB.xMin),
+    );
+    const yOverlap = Math.max(
+      0,
+      Math.min(boxA.yMax, boxB.yMax) - Math.max(boxA.yMin, boxB.yMin),
+    );
+    return xOverlap * yOverlap;
+  }
 
   /**
-   * Retorna a forma mais próxima ao ponto clicado (x, y), se existir alguma dentro da "tolerância".
-   * - Primeiro filtra por bounding box.
-   * - Depois faz uma verificação de distância até a linha ou circunferência.
+   * Seleciona apenas uma forma (a que tiver maior área de interseção relativa)
+   * dentro do retângulo de seleção definido por p1 e p2.
    */
-  const getClickedShape = (x: number, y: number): Shape | undefined => {
-    // Filtra apenas as formas cujo “bounding box” (ou aproximação) inclua o ponto clicado
-    const possibleShapes = drawnShapes.filter((shape) => {
-      if (shape instanceof Line) {
-        const { start, end } = shape;
-        const xMin = Math.min(start.x, end.x) - pixelSize;
-        const xMax = Math.max(start.x, end.x) + pixelSize;
-        const yMin = Math.min(start.y, end.y) - pixelSize;
-        const yMax = Math.max(start.y, end.y) + pixelSize;
-        return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
-      } else if (shape instanceof Circle) {
-        const { center, radius } = shape;
-        const xMin = center.x - radius - pixelSize;
-        const xMax = center.x + radius + pixelSize;
-        const yMin = center.y - radius - pixelSize;
-        const yMax = center.y + radius + pixelSize;
-        return x >= xMin && x <= xMax && y >= yMin && y <= yMax;
-      }
-      return false;
+  const handleTransformSelection = (
+    p1: { x: number; y: number },
+    p2: { x: number; y: number },
+  ) => {
+    // Retângulo de seleção
+    const selBox = {
+      xMin: Math.min(p1.x, p2.x),
+      xMax: Math.max(p1.x, p2.x),
+      yMin: Math.min(p1.y, p2.y),
+      yMax: Math.max(p1.y, p2.y),
+    };
+
+    // 1. Descobre quais formas intersectam o retângulo
+    const shapesFound: Shape[] = drawnShapes.filter((shape) => {
+      const box = getBoundingBox(shape);
+      return intersectsRect(box, selBox);
     });
 
-    let closestShape: Shape | undefined;
-    let minDistance = Infinity;
+    if (shapesFound.length === 0) {
+      // Ninguém intersectou = nada selecionado
+      setDrawnShapes((old) =>
+        old.map((shape) => {
+          shape.deselect();
+          return shape;
+        }),
+      );
+      setSelectedShape(null);
+          // Após finalizar a seleção, limpa o retângulo após 2 segundos
+    setTimeout(() => {
+      setTransformRectPoints([]);
+    }, 600);
+      return;
+    }
 
-    possibleShapes.forEach((shape) => {
-      if (shape instanceof Line) {
-        const { start, end } = shape;
+    // 2. Calcula a melhor forma (maior ratio áreaInterseção/áreaForma)
+    let bestShape: Shape | null = null;
+    let bestRatio = 0;
 
-        // Função auxiliar para calcular a distância do ponto (px, py) até a linha (x1, y1)-(x2, y2)
-        const distanceToLine = (
-          px: number,
-          py: number,
-          x1: number,
-          y1: number,
-          x2: number,
-          y2: number,
-        ) => {
-          const A = x2 - x1;
-          const B = y2 - y1;
-          const C = x1 - px;
-          const D = y1 - py;
-          const numerator = Math.abs(A * D - C * B);
-          const denominator = Math.sqrt(A * A + B * B);
+    shapesFound.forEach((shape) => {
+      const box = getBoundingBox(shape);
+      const interArea = intersectionArea(box, selBox);
+      const shapeArea = (box.xMax - box.xMin) * (box.yMax - box.yMin);
+      const ratio = shapeArea > 0 ? interArea / shapeArea : 0;
 
-          if (denominator === 0) return Infinity; // Linha degenerada
+      if (ratio > bestRatio) {
+        bestRatio = ratio;
+        bestShape = shape;
+      }
+    });
 
-          const distance = numerator / denominator;
-          // Verifica se o ponto projetado está dentro do segmento
-          const dot = (px - x1) * A + (py - y1) * B;
-          const lenSq = A * A + B * B;
-
-          if (dot < 0 || dot > lenSq) return Infinity;
-          return distance;
-        };
-
-        const dist = distanceToLine(x, y, start.x, start.y, end.x, end.y);
-
-        // “Folga” para facilitar a seleção de linhas conforme o tamanho do pixel
-        let selectionTolerance;
-        if (pixelSize >= 10) {
-          selectionTolerance = 2;
-        } else if (pixelSize >= 5) {
-          selectionTolerance = 5;
+    // 3. Atualiza drawnShapes => somente a melhorShape é “selected”
+    setDrawnShapes((old) =>
+      old.map((shape) => {
+        if (shape === bestShape) {
+          shape.select();
         } else {
-          selectionTolerance = 30;
+          shape.deselect();
         }
+        return shape;
+      }),
+    );
 
-        if (dist < pixelSize * selectionTolerance && dist < minDistance) {
-          minDistance = dist;
-          closestShape = shape;
-        }
-      } else if (shape instanceof Circle) {
-        const { center, radius } = shape;
-        const dx = x - center.x;
-        const dy = y - center.y;
-        const distanceFromCenter = Math.sqrt(dx * dx + dy * dy);
-        const distanceToCircumference = Math.abs(distanceFromCenter - radius);
+    // 4. Define a selectedShape
+    setSelectedShape(bestShape);
 
-        if (
-          distanceToCircumference < pixelSize &&
-          distanceToCircumference < minDistance
-        ) {
-          minDistance = distanceToCircumference;
-          closestShape = shape;
-        }
-      }
-    });
-
-    return closestShape;
+    // Após finalizar a seleção, limpa o retângulo após 2 segundos
+    setTimeout(() => {
+      setTransformRectPoints([]);
+    }, 700);
   };
 
   /**
@@ -313,30 +321,22 @@ const Canvas: React.FC<CanvasProps> = ({
     const newPoint = { x, y };
 
     // Se não estamos em modo de transformação, registra o ponto para highlight
-    if (mode !== 'transform' && mode) {
+    if (mode) {
       setClickedHighlight(newPoint);
     }
 
     // Modo de transformação
+    // Se for transform, 2 cliques para formar o retângulo
     if (mode === 'transform') {
-      const clickedShape = getClickedShape(x, y);
-      if (clickedShape) {
-        // Seleciona a forma clicada e dessela as outras
-        setDrawnShapes((prevShapes) =>
-          prevShapes.map((shape) => {
-            if (shape === clickedShape) {
-              shape.select();
-            } else {
-              shape.deselect();
-            }
-            return shape;
-          }),
-        );
-        if (selectedShape) {
-          setPrevSelectedShape(selectedShape);
+      setTransformRectPoints((prev) => {
+        const newPoints = [...prev, newPoint];
+        if (newPoints.length === 2) {
+          // Já temos o retângulo (p1, p2)
+          handleTransformSelection(newPoints[0], newPoints[1]);
+          return newPoints;
         }
-        setSelectedShape(clickedShape);
-      }
+        return newPoints;
+      });
       return;
     }
 
@@ -387,14 +387,10 @@ const Canvas: React.FC<CanvasProps> = ({
 
         setNewClicks([...newClicks.slice(-1), newPoint]);
 
-        
         console.log(newClicks);
 
-
-        
         setPolygonVertices((prevVertices) => {
-          const updatedVertices = [...prevVertices, newPoint];         
-          
+          const updatedVertices = [...prevVertices, newPoint];
 
           if (prevVertices.length > 0) {
             const lastPoint = prevVertices[prevVertices.length - 1];
@@ -442,7 +438,12 @@ const Canvas: React.FC<CanvasProps> = ({
 
         if (mode === 'line') {
           setSelectedShape(null);
-          const newLine = new Line(p1, p2, selectedAlgorithmLine, selectedColor);
+          const newLine = new Line(
+            p1,
+            p2,
+            selectedAlgorithmLine,
+            selectedColor,
+          );
 
           setDrawnShapes((shapes) => {
             const alreadyExists = shapes.some(
@@ -480,7 +481,10 @@ const Canvas: React.FC<CanvasProps> = ({
           // Cria um novo clipper e desenha a área de recorte
           const newClipper = new Clipper(selectedAlgorithmClipping);
           newClipper.setRegion(p1, p2);
-          newClipper.drawRegion(canvasRef.current?.getContext('2d')!, pixelSize);
+          newClipper.drawRegion(
+            canvasRef.current?.getContext('2d')!,
+            pixelSize,
+          );
 
           setDrawnClipper((prevClippers) => {
             const alreadyExists = prevClippers.some((clip) => {
@@ -508,7 +512,10 @@ const Canvas: React.FC<CanvasProps> = ({
             })
             .filter((s) => s !== null) as Shape[];
 
-          setClippedShapes((prevClipped) => [...prevClipped, ...shapesAfterClipping]);
+          setClippedShapes((prevClipped) => [
+            ...prevClipped,
+            ...shapesAfterClipping,
+          ]);
         }
 
         // Limpa o array de cliques depois de usar

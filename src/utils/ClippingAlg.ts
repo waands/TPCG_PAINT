@@ -1,4 +1,4 @@
-import { Line } from '../utils/Shapes';
+import { Line } from '../components/Shapes';
 import { ClippingRegion } from './Clipping';
 
 // Função para obter o código de localização de um ponto em relação à região de recorte
