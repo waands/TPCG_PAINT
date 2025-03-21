@@ -33,6 +33,8 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
       ? 'badge-secondary'
       : mode === 'clipping'
       ? 'badge-success'
+      : mode === 'polygon'
+      ? 'badge-info'
       : 'badge-ghost';
 
   return (
@@ -47,6 +49,8 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
             ? 'Círculo'
             : mode === 'clipping'
             ? 'Recorte'
+            : mode === 'polygon'
+            ? 'Polígono'
             : ''}
         </div>
       ) : null}
@@ -59,13 +63,13 @@ export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
           className={`badge badge-soft ${theme}`}
           style={{ marginRight: '5px' }}
         >
-          {mode === 'line' ? selectedAlgorithmLine : ''}
+          {mode === 'line'  || 'polygon' ? selectedAlgorithmLine : ''}
         </div>
       ) : null}
       {selectedAlgorithmClipping &&
       mode != null &&
       mode != 'transform' &&
-      mode != 'line' ? (
+      mode != 'line' && mode != 'polygon' && mode != 'circle' ? (
         <div
           className={`badge badge-soft ${theme}`}
           style={{ marginRight: '5px' }}

@@ -24,6 +24,7 @@ interface FunctionalitiesProps {
   setSelectedAlgorithmClipping: (algorithm: 'CoSu' | 'LiBa') => void;
   selectedAlgorithmClipping: 'CoSu' | 'LiBa';
   setDrawnClipper: Dispatch<SetStateAction<Clipper[]>>;
+  drawnClipper: Clipper[];
   setClippedShapes: Dispatch<SetStateAction<Shape[]>>;
   clippedShapes: Shape[];
 }
@@ -47,6 +48,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
   setSelectedAlgorithmClipping,
   selectedAlgorithmClipping,
   setDrawnClipper,
+  drawnClipper,
   setClippedShapes,
   clippedShapes,
 }) => {
@@ -305,8 +307,9 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
                 <input
                   style={{ marginTop: '10px' }}
                   type="range"
-                  min="1"
-                  max="50"
+                  min="0"
+                  max="10"
+                  step='0.1'
                   value={transformValue}
                   className="range range-accent"
                   onChange={(e) => setTransformValue(Number(e.target.value))}
@@ -318,10 +321,11 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
                   required
                   value={transformValue}
                   onChange={(e) =>
-                    setTransformValue(parseInt(e.target.value) || 0)
+                    setTransformValue(parseFloat(e.target.value) || 0)
                   }
-                  min="1"
-                  max="50"
+                  min="0"
+                  max="10"
+                  step='0.1'
                   title=""
                 />
               </div>
@@ -573,7 +577,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
         </ul>
       </div>
 
-      {clippedShapes.length > 0 ? (
+      {clippedShapes.length > 0  || drawnClipper.length > 0 ? (
         
         <div className="indicator">
           

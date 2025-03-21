@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import MouseHighlight from './extra/MouseHighlight';
 import Controls from './components/Controls';
 import Functionalities from './components/Functionalities';
@@ -135,6 +135,7 @@ function App() {
         setSelectedAlgorithmClipping={setselectedAlgorithmClipping}
         selectedAlgorithmClipping={selectedAlgorithmClipping}
         setDrawnClipper={setDrawnClipper}
+        drawnClipper={drawnClipper}
         setClippedShapes={setClippedShapes}
         clippedShapes={clippedShapes}
       />
