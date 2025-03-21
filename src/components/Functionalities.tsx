@@ -309,7 +309,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
                   type="range"
                   min="0"
                   max="10"
-                  step='0.1'
+                  step="0.1"
                   value={transformValue}
                   className="range range-accent"
                   onChange={(e) => setTransformValue(Number(e.target.value))}
@@ -325,7 +325,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
                   }
                   min="0"
                   max="10"
-                  step='0.1'
+                  step="0.1"
                   title=""
                 />
               </div>
@@ -436,6 +436,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             setDrawnShapes((prevShapes) => [...prevShapes]); // Força a atualização
           }
           setNewClicks([]);
+          setSelectedShape(null);
         }}
       >
         <button
@@ -450,7 +451,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             setMode('line');
             selectedShape?.deselect();
 
-            //setSelectedShape(null);
+            setSelectedShape(null);
           }}
         >
           Reta
@@ -504,7 +505,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             selectedShape.deselect();
             setDrawnShapes((prevShapes) => [...prevShapes]); // Força a atualização
           }
-          //setSelectedShape(null);
+          setSelectedShape(null);
         }}
       >
         Círculo
@@ -519,6 +520,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             setDrawnShapes((prevShapes) => [...prevShapes]); // Força a atualização
           }
           setNewClicks([]);
+          setSelectedShape(null);
         }}
       >
         <button
@@ -533,7 +535,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             setMode('polygon');
             selectedShape?.deselect();
 
-            //setSelectedShape(null);
+            setSelectedShape(null);
           }}
         >
           Polígono
@@ -577,10 +579,8 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
         </ul>
       </div>
 
-      {clippedShapes.length > 0  || drawnClipper.length > 0 ? (
-        
-        <div className="indicator">
-          
+      {clippedShapes.length > 0 || drawnClipper.length > 0 ? (
+        <div className="indicator"  onClick={() => {setSelectedShape(null)}}>
           <span
             className="indicator-item badge badge-secondary cursor-pointer hover:bg-red-500"
             onClick={(e) => {
@@ -591,8 +591,13 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
           >
             x
           </span>
-          
-          <div className="dropdown dropdown-center">
+
+          <div
+            className="dropdown dropdown-center"
+            onClick={() => {
+              setSelectedShape(null);
+            }}
+          >
             <button
               className={`btn ${
                 mode === 'clipping'
@@ -601,7 +606,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
               }`}
               onClick={() => {
                 setMode('clipping');
-                
+                setSelectedShape(null);
               }}
             >
               Recortar
@@ -652,9 +657,13 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             }
           </div>
         </div>
-        
       ) : (
-        <div className="dropdown dropdown-center">
+        <div
+          className="dropdown dropdown-center"
+          onClick={() => {
+            setSelectedShape(null);
+          }}
+        >
           <button
             className={`btn ${
               mode === 'clipping'
@@ -663,7 +672,7 @@ const Functionalities: React.FC<FunctionalitiesProps> = ({
             }`}
             onClick={() => {
               setMode('clipping');
-              
+              setSelectedShape(null);
             }}
           >
             Recortar
