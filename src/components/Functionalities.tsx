@@ -2,7 +2,7 @@ import React from 'react';
 import { Dispatch, SetStateAction } from 'react';
 import { Shape } from '../utils/Shapes';
 import ColorPicker from './ColorPicker';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Clipper } from '../utils/Clipping';
 
 interface FunctionalitiesProps {

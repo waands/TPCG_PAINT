@@ -54,7 +54,6 @@ function App() {
       <div style={{position: 'absolute', top: '10px', left: '10px' }}>
         <ActionsTimeline
           drawnShapes={drawnShapes}
-          selectedShape={setSelectedShape}
           mode={mode}
           selectedAlgorithmLine={selectedAlgorithmLine}
           selectedAlgorithmClipping={selectedAlgorithmClipping}
@@ -91,8 +90,6 @@ function App() {
 
       {highlight && (<MouseHighlight pixelSize={pixelSize} canvasSize={canvasSize} mousePos={mousePos} />)}
       <Canvas
-        setShowGrid={setShowGrid}
-        showGrid={showGrid}
         gridThickness={gridThickness}
         pixelSize={pixelSize}
         mode={mode}
@@ -104,7 +101,6 @@ function App() {
         setSelectedShape={setSelectedShape}
         selectedShape={selectedShape}
         setMousePos={setMousePos}
-        setReRender={setReRender}
         reRender={reRender}
         newClicks={newClicks}
         setNewClicks={setNewClicks}

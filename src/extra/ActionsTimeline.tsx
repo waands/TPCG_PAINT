@@ -3,7 +3,6 @@ import { Shape } from '../utils/Shapes';
 
 interface ActionsTimelineProps {
   drawnShapes: Shape[];
-  selectedShape: React.Dispatch<React.SetStateAction<Shape | null>>;
   mode: string | null;
   selectedAlgorithmLine: 'DDA' | 'Bresenham';
   selectedColor: string;
@@ -15,7 +14,6 @@ interface ActionsTimelineProps {
 
 export const ActionsTimeline: React.FC<ActionsTimelineProps> = ({
   drawnShapes,
-  selectedShape,
   mode,
   selectedAlgorithmLine,
   selectedAlgorithmClipping,

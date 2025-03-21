@@ -11,8 +11,6 @@ import { drawDDA, drawBresenham } from '../utils/LineAlg';
 
 interface CanvasProps {
   mode: string | null;
-  showGrid: boolean;
-  setShowGrid: Dispatch<SetStateAction<boolean>>;
   gridThickness: number;
   pixelSize: number;
   canvasSize: { width: number; height: number };
@@ -24,7 +22,6 @@ interface CanvasProps {
   selectedShape: Shape | null;
   setMousePos: Dispatch<SetStateAction<{ x: number; y: number }>>;
   reRender: boolean;
-  setReRender: Dispatch<SetStateAction<boolean>>;
   newClicks: { x: number; y: number }[];
   setNewClicks: Dispatch<SetStateAction<{ x: number; y: number }[]>>;
   setClickedHighlight: Dispatch<
@@ -59,8 +56,6 @@ export const colorPixel = (
 
 const Canvas: React.FC<CanvasProps> = ({
   mode,
-  showGrid,
-  setShowGrid,
   gridThickness,
   pixelSize,
   canvasSize,
@@ -72,7 +67,6 @@ const Canvas: React.FC<CanvasProps> = ({
   selectedShape,
   setMousePos,
   reRender,
-  setReRender,
   newClicks,
   setNewClicks,
   setClickedHighlight,
@@ -88,7 +82,7 @@ const Canvas: React.FC<CanvasProps> = ({
   const [prevSelectedShape, setPrevSelectedShape] = useState<Shape | null>(null);
 
   // Controla os cliques necessários para desenhar figuras que necessitam mais de um ponto (ex: linhas).
-  const [clicks, setClicks] = useState<{ x: number; y: number }[]>([]);
+  const [, setClicks] = useState<{ x: number; y: number }[]>([]);
 
   // Armazena os vértices temporários de um polígono antes dele ser fechado.
   const [polygonVertices, setPolygonVertices] = useState<
@@ -352,11 +346,11 @@ const Canvas: React.FC<CanvasProps> = ({
       // Duplo clique: fecha o polígono
       if (event.detail === 2) {
         setPolygonVertices((prevVertices) => {
-          if (prevVertices.length >= 3) {
+          if (polygonVertices.length >= 3) {
             const firstVertex = prevVertices[0];
 
             // Ajusta o estado dos cliques e desenha a reta que fecha o polígono
-            setNewClicks(prev => [...newClicks.slice(-1), firstVertex]);
+            setNewClicks([...newClicks.slice(-1), firstVertex]);
 
             // Cria o objeto Polygon a partir dos vértices acumulados
             const newPolygon = new Polygon(

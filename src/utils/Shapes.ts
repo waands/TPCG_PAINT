@@ -287,13 +287,6 @@ class Polygon extends Shape {
     }
   }
 
-  translate(
-    tx: number,
-    ty: number,
-    sx: number,
-    sy: number,
-    theta: number,
-    eixo: number,
-  ): void {}
+  translate(): void {}
 }
 export { Shape, Line, Circle, Polygon };
