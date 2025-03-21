@@ -1,54 +1,44 @@
-# React + TypeScript + Vite
+# Paint do Wands
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[Paint do Wands - Live Demo](https://paint-do-wands.vercel.app/)
 
-Currently, two official plugins are available:
+Paint do Wands é um aplicativo web interativo desenvolvido para a disciplina de Computação Gráfica. O projeto demonstra a implementação de algoritmos clássicos de transformação geométrica, rasterização e recorte, permitindo que o usuário crie, modifique e manipule formas 2D diretamente em um canvas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Funcionalidades
 
-## Expanding the ESLint configuration
+### Transformações Geométricas 2D
+- **Translação:** Deslocamento das formas conforme valores informados pelo usuário.
+- **Rotação:** Rotaciona formas em torno de um ponto de referência.
+- **Escala:** Altera o tamanho das formas com fatores de escala definidos pelo usuário.
+- **Reflexões:** Suporte para reflexões nos eixos X, Y e na diagonal XY, utilizando fatores informados pelo usuário (sem valores fixos).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Rasterização
+- **Retas:** Implementação dos algoritmos DDA e Bresenham para a rasterização de linhas.
+- **Circunferência:** Rasterização de círculos utilizando o algoritmo de Bresenham.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### Recorte
+- **Cohen-Sutherland:** Recorte de linhas utilizando a codificação de regiões.
+- **Liang-Barsky:** Recorte de linhas utilizando a equação paramétrica.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Tecnologias Utilizadas
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **React:** Biblioteca para construção da interface do usuário.
+- **TypeScript:** Superset do JavaScript que adiciona tipagem estática.
+- **HTML5 Canvas:** Elemento HTML para renderização de gráficos 2D.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Como Utilizar
+
+1. Acesse a [Live Demo](https://paint-do-wands.vercel.app/).
+2. Selecione o modo desejado (por exemplo, desenhar retas, círculos, polígonos ou aplicar recorte).
+3. Insira os valores de transformação ou recorte conforme solicitado pela interface.
+4. Interaja com o canvas para desenhar e manipular as formas.
+5. Utilize as ferramentas de transformação para aplicar translação, rotação, escala e reflexões nas formas desenhadas.
+
+## Créditos
+Este projeto foi desenvolvido para a disciplina de Computação Gráfica e implementa algoritmos clássicos, incluindo:
+
+- Transformações geométricas 2D (translação, rotação, escala e reflexões X/Y/XY);
+- Algoritmos de rasterização para retas (DDA e Bresenham) e circunferências (Bresenham);
+- Técnicas de recorte, utilizando Cohen-Sutherland e Liang-Barsky;
+
+Contribuições, sugestões e melhorias são sempre bem-vindas!
