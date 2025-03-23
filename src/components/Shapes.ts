@@ -277,8 +277,8 @@ class Polygon extends Shape {
       for (const v of this.vertices) {
         ctx.beginPath();
         ctx.fillRect(
-          Math.round(v.x) * pixelSize - pixelSize / 2,
-          Math.round(v.y) * pixelSize - pixelSize / 2,
+          Math.floor(v.x) * pixelSize,
+          Math.floor(v.y) * pixelSize,
           pixelSize,
           pixelSize,
         );
@@ -287,6 +287,28 @@ class Polygon extends Shape {
     }
   }
 
-  translate(): void {}
+  translate(
+    tx: number,
+    ty: number,
+    sx: number,
+    sy: number,
+    theta: number,
+    eixo: number,
+  ) {
+    for (const v of this.lines) {
+      compositeTransform(v, tx, ty, sx, sy, theta, eixo);
+      if (sx != 0 || sy != 0) {
+        v.start.x = Math.floor(v.start.x);
+        v.start.y = Math.floor(v.start.y);
+        v.end.x = Math.ceil(v.end.x);
+        v.end.y = Math.ceil(v.end.y);
+      } else {
+        v.start.x = Math.round(v.start.x);
+        v.start.y = Math.round(v.start.y);
+        v.end.x = Math.round(v.end.x);
+        v.end.y = Math.round(v.end.y);
+      }
+    }
+  }
 }
 export { Shape, Line, Circle, Polygon };

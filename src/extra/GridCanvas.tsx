@@ -80,7 +80,7 @@ const GridCanvas: React.FC<GridCanvasProps> = ({
         (selBox.yMax - selBox.yMin) * pixelSize,
       );
 
-      // Se quiser preencher com uma cor semi-transparente:
+      // Preencher com uma cor semi-transparente:
       ctx.fillStyle = 'rgba(0, 0, 255, 0.2)';
       ctx.fillRect(
         selBox.xMin * pixelSize,

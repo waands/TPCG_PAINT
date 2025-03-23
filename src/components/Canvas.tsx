@@ -84,22 +84,22 @@ const Canvas: React.FC<CanvasProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Armazena a forma selecionada anteriormente, para poder desselar caso mudemos de modo.
+  // Armazena a forma selecionada anteriormente, para poder desselecionar caso mude de modo
   const [prevSelectedShape, setPrevSelectedShape] = useState<Shape | null>(
     null,
   );
 
-  // Controla os cliques necessários para desenhar figuras que necessitam mais de um ponto (ex: linhas).
+  // Controla os cliques necessários para desenhar figuras que necessitam mais de um ponto (ex: linhas)
   const [, setClicks] = useState<{ x: number; y: number }[]>([]);
 
-  // Armazena os vértices temporários de um polígono antes dele ser fechado.
+  // Armazena os vértices temporários de um polígono antes dele ser fechado
   const [polygonVertices, setPolygonVertices] = useState<
     { x: number; y: number }[]
   >([]);
 
   /**
-   * Atualiza a posição do mouse (em coordenadas de grid) sempre que o mouse se move sobre o canvas.
-   * Usado para desenhar o “highlight” ou exibir a posição atual.
+   * Atualiza a posição do mouse (em coordenadas de grid) sempre que o mouse se move sobre o canvas
+   * Usado para desenhar o “highlight” ou exibir a posição atual
    */
   const highlightMousePosition = (event: MouseEvent) => {
     const canvas = canvasRef.current;
@@ -134,8 +134,8 @@ const Canvas: React.FC<CanvasProps> = ({
     // Limpa toda a área do canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Se não houver formas recortadas, desenha as formas originais.
-    // Caso contrário, desenha as formas recortadas (clippedShapes).
+    // Se não houver formas recortadas, desenha as formas originais
+    // Caso contrário, desenha as formas recortadas (clippedShapes)
     if (clippedShapes.length === 0) {
       drawnShapes.forEach((shape) => shape.draw(ctx, pixelSize));
     } else {
@@ -166,7 +166,7 @@ const Canvas: React.FC<CanvasProps> = ({
 
   /**
    * Efeito que lida principalmente com a seleção de formas e o reset de polígonos inacabados
-   * quando o modo muda.
+   * quando o modo muda
    */
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -174,19 +174,19 @@ const Canvas: React.FC<CanvasProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Se não estamos mais no modo polígono, limpa os vértices temporários.
+    // Se não esta mais no modo polígono, limpa os vértices temporários
     if (mode !== 'polygon') {
       setPolygonVertices([]);
     }
 
-    // Se não estamos mais no modo de transformação, desselar a forma anterior, se existir.
+    // Se não esta mais no modo de transformação, desselar a forma anterior, se existir
     if (mode !== 'transform') {
       prevSelectedShape?.deselect();
       setTransformRectPoints([]);
     }
 
-    // Se há uma forma selecionada, desenhamos novamente para ressaltar.
-    // Caso contrário, desenhamos a última forma que foi adicionada (se houver).
+    // Se há uma forma selecionada, desenha novamente para ressaltar
+    // Caso contrário, desenha a última forma que foi adicionada (se houver)
     if (clippedShapes.length === 0) {
       if (selectedShape) {
         if (mode !== 'transform') {
@@ -212,7 +212,7 @@ const Canvas: React.FC<CanvasProps> = ({
     }
   }, [drawnShapes, selectedShape, mode, clippedShapes, prevSelectedShape]);
   /**
-   * Calcula a área de interseção entre dois retângulos.
+   * Calcula a área de interseção entre dois retângulos
    */
   function intersectionArea(
     boxA: { xMin: number; yMin: number; xMax: number; yMax: number },
@@ -231,7 +231,7 @@ const Canvas: React.FC<CanvasProps> = ({
 
   /**
    * Seleciona apenas uma forma (a que tiver maior área de interseção relativa)
-   * dentro do retângulo de seleção definido por p1 e p2.
+   * dentro do retângulo de seleção definido por p1 e p2
    */
   const handleTransformSelection = (
     p1: { x: number; y: number },
@@ -317,7 +317,7 @@ const Canvas: React.FC<CanvasProps> = ({
     const y = Math.floor((event.clientY - rect.top) / pixelSize);
     const newPoint = { x, y };
 
-    // Se não estamos em modo de transformação, registra o ponto para highlight
+    // Se não está em modo de transformação, registra o ponto para highlight
     if (mode) {
       setClickedHighlight(newPoint);
     }
@@ -328,7 +328,7 @@ const Canvas: React.FC<CanvasProps> = ({
       setTransformRectPoints((prev) => {
         const newPoints = [...prev, newPoint];
         if (newPoints.length === 2) {
-          // Já temos o retângulo (p1, p2)
+          // Já tem o retângulo (p1, p2)
           handleTransformSelection(newPoints[0], newPoints[1]);
           return newPoints;
         }
@@ -426,7 +426,7 @@ const Canvas: React.FC<CanvasProps> = ({
       const newClicksArray = [...prev, newPoint];
       setNewClicks(newClicksArray);
 
-      // Se coletamos dois cliques, executamos a ação final (desenha ou faz o clipping)
+      // Se coleta dois cliques, executa a ação final (desenha ou faz o clipping)
       if (newClicksArray.length === 2) {
         const [p1, p2] = newClicksArray;
 

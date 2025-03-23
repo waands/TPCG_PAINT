@@ -10,36 +10,36 @@ import {Clipper } from './utils/Clipping';
 
 
 function App() {
-  const [showGrid, setShowGrid] = useState(true);
-  const [gridThickness, setGridThickness] = useState(1);
-  const [pixelSize, setPixelSize] = useState(10);
+  const [showGrid, setShowGrid] = useState(true); //mostrar grid
+  const [gridThickness, setGridThickness] = useState(1); //grossura do grid
+  const [pixelSize, setPixelSize] = useState(10); //tamanho do pixel
   const [canvasSize, setCanvasSize] = useState({
     width: Math.floor((window.innerWidth - 200) / pixelSize) * pixelSize,
     height: Math.floor((window.innerHeight - 290) / pixelSize) * pixelSize,
-  });
-  const [mode, setMode] = useState<string | null>(null);
-  const [drawnShapes, setDrawnShapes] = useState<Shape[]>([]);
-  const [clippedShapes, setClippedShapes] = useState<Shape[]>([]);
-  const [drawnClipper, setDrawnClipper] = useState<Clipper[]>([]);
+  }); //tamanho do canvas
+  const [mode, setMode] = useState<string | null>(null); //modo de desenho
+  const [drawnShapes, setDrawnShapes] = useState<Shape[]>([]); //formas desenhadas
+  const [clippedShapes, setClippedShapes] = useState<Shape[]>([]); //formas recortadas
+  const [drawnClipper, setDrawnClipper] = useState<Clipper[]>([]); //clipper desenhado
   const [selectedAlgorithmLine, setSelectedAlgorithmLine] = useState<
     'DDA' | 'Bresenham'
-  >('DDA');
+  >('DDA'); //algoritmo de desenho de reta
   const [selectedAlgorithmClipping, setselectedAlgorithmClipping] = useState<
     'CoSu' | 'LiBa'
-  >('CoSu');
-  const [selectedColor, setSelectedColor] = useState<string>('#000');
-  const [selectedShape, setSelectedShape] = useState<Shape | null>(null);
+  >('CoSu'); //algoritmo de recorte
+  const [selectedColor, setSelectedColor] = useState<string>('#000'); //cor selecionada
+  const [selectedShape, setSelectedShape] = useState<Shape | null>(null); //forma selecionada
 
-  const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [highlight, setHighlight] = useState<boolean>(true);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 }); //posição do mouse
+  const [highlight, setHighlight] = useState<boolean>(true); //destacar pixel
   
-  const [reRender , setReRender] = useState<boolean>(false);
+  const [reRender , setReRender] = useState<boolean>(false); //forçar renderização
 
-  const [newClicks, setNewClicks] = useState<{x: number; y: number}[]>([]);
+  const [newClicks, setNewClicks] = useState<{x: number; y: number}[]>([]); //armazena cliques para desenho de formas
 
-  const [transformType, setTransformType] = useState<string | null>(null);
+  const [transformType, setTransformType] = useState<string | null>(null); //tipo de transformação
 
-  const [clickedHighlight, setClickedHighlight] = useState<{x: number; y: number}>();
+  const [clickedHighlight, setClickedHighlight] = useState<{x: number; y: number}>(); //destacar pixel clicado
 
   // Armazena cliques para construir retangulo de seleção
   const [transformRectPoints, setTransformRectPoints] = useState<{ x: number; y: number }[]>([]);
@@ -55,6 +55,7 @@ function App() {
       >x: {mousePos.x} | y:{mousePos.y}</div>
 
       <div style={{position: 'absolute', top: '10px', left: '10px' }}>
+        {/*componente com indicações das ações do usuário*/}
         <ActionsTimeline
           drawnShapes={drawnShapes}
           mode={mode}
@@ -70,6 +71,7 @@ function App() {
         style={{ position: 'absolute', top: '10px', left: '10px' }}
       >{mode === 'transform' ? 'Transformada' : mode === 'line' ? 'Reta' : mode === 'circle' ? 'Círculo' : '' }</div>
       */}
+      {/*componente com botões e sliders que permitem configurar tamanho do canvas, espessura da grade, tamanho do pixel, entre outros parâmetros de interface.*/}
       <Controls
         showGrid={showGrid}
         setShowGrid={setShowGrid}
@@ -83,6 +85,7 @@ function App() {
         highlight={highlight}
       />
       <div style={{ position: 'relative' }}>
+        {/*camada separada para desenhar a grade e o retângulo de seleção, sem “sujar” o canvas principal.*/}
       <GridCanvas
         pixelSize={pixelSize}
         canvasSize={canvasSize}
@@ -92,8 +95,10 @@ function App() {
         transformRectPoints={transformRectPoints}
         transformType={transformType}
       />
-
+      {/*camada separada para desenhar o highlight do mouse, sem “sujar” o canvas principal.*/}
       {highlight && (<MouseHighlight pixelSize={pixelSize} canvasSize={canvasSize} mousePos={mousePos} />)}
+
+      {/*canvas principal, onde as formas são desenhadas.*/}
       <Canvas
         gridThickness={gridThickness}
         pixelSize={pixelSize}
@@ -118,6 +123,7 @@ function App() {
         setTransformRectPoints={setTransformRectPoints}
       />
       </div>
+      {/*componente com botões para chamar as funções de desenho de formas, transformar, recortar, apagar e limpar.*/}
       <Functionalities
         mode={mode}
         setMode={setMode}
